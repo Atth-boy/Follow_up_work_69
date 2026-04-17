@@ -1,0 +1,72 @@
+const SHEET_NAME = 'บันทึก';
+const HEADERS = ['timestamp','area','name','empId','site','dept','div','tel','dateFrom','dateTo'];
+
+function doGet(e) {
+  const action = e.parameter.action || 'read';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+
+  if (action === 'delete') {
+    const lock = LockService.getScriptLock();
+    lock.tryLock(5000);
+    try {
+      const rowNum = parseInt(e.parameter.row);
+      if (sheet && rowNum >= 2) sheet.deleteRow(rowNum);
+    } finally { lock.releaseLock(); }
+    return ContentService.createTextOutput('ok').setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === 'add' || action === 'update') {
+    const lock = LockService.getScriptLock();
+    lock.tryLock(5000);
+    try {
+      const data = JSON.parse(e.parameter.data || '{}');
+      if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(HEADERS);
+        sheet.getRange(1,1,1,HEADERS.length).setFontWeight('bold').setBackground('#374151').setFontColor('#ffffff');
+        sheet.setFrozenRows(1);
+      }
+      const now = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss');
+      if (action === 'update') {
+        const rowNum = parseInt(e.parameter.row);
+        if (rowNum >= 2) {
+          const ts = sheet.getRange(rowNum, 1).getValue() || now;
+          sheet.getRange(rowNum, 1, 1, HEADERS.length).setValues([[
+            ts, data.area||'', data.name||'', data.empId||'', data.site||'',
+            data.dept||'', data.div||'', data.tel||'', data.dateFrom||'', data.dateTo||''
+          ]]);
+        }
+      } else {
+        sheet.appendRow([
+          now, data.area||'', data.name||'', data.empId||'', data.site||'',
+          data.dept||'', data.div||'', data.tel||'', data.dateFrom||'', data.dateTo||''
+        ]);
+      }
+    } finally { lock.releaseLock(); }
+    return ContentService.createTextOutput('ok').setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // read (default)
+  if (!sheet || sheet.getLastRow() <= 1) {
+    return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
+  }
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+  const data = rows.slice(1).map((row, idx) => {
+    const obj = { _row: idx + 2 };
+    headers.forEach((h, i) => {
+      let val = row[i];
+      if (val instanceof Date) {
+        val = (h === 'dateFrom' || h === 'dateTo')
+          ? Utilities.formatDate(val, 'Asia/Bangkok', 'yyyy-MM-dd')
+          : Utilities.formatDate(val, 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss');
+      } else {
+        val = String(val == null ? '' : val);
+      }
+      obj[h] = val;
+    });
+    return obj;
+  });
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}
