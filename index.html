@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ติดตามงาน กสฟ. ปี 2569</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      color: #1a202c;
+      font-size: 14px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #374151, #f97316);
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header .logo { font-size: 32px; }
+    header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+    header p  { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+    .toolbar {
+      padding: 12px 32px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar input {
+      padding: 7px 14px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 13px;
+      width: 280px;
+      outline: none;
+    }
+    .toolbar input:focus { border-color: #f97316; }
+    .toolbar .status-badge {
+      margin-left: auto;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .status-badge span {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .table-wrap {
+      padding: 20px 32px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+
+    thead th {
+      background: #374151;
+      color: white;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+    thead th:first-child { width: 48px; text-align: center; border-radius: 10px 0 0 0; }
+    thead th:last-child  { width: 100px; text-align: center; border-radius: 0 10px 0 0; }
+
+    tbody tr { border-bottom: 1px solid #e9eef5; transition: background 0.15s; }
+    tbody tr:hover { background: #fff7ed; }
+    tbody tr:last-child { border-bottom: none; }
+
+    td { padding: 10px 14px; vertical-align: top; }
+    td:first-child { text-align: center; color: #64748b; font-weight: 500; }
+    td:last-child  { text-align: center; }
+
+    .col-item    { min-width: 200px; max-width: 260px; font-weight: 500; }
+    .col-plan    { min-width: 240px; max-width: 300px; white-space: pre-line; color: #374151; }
+    .col-step    { min-width: 220px; max-width: 280px; white-space: pre-line; color: #374151; }
+    .col-date    { white-space: nowrap; color: #64748b; font-size: 12px; min-width: 90px; }
+    .col-owner   { white-space: nowrap; color: #4b5563; font-size: 13px; min-width: 100px; }
+
+    .empty-cell { color: #cbd5e0; font-style: italic; font-size: 12px; }
+
+    .btn-update {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 5px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-update:hover { background: #ea580c; }
+
+    /* Modal */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.active { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      width: 560px;
+      max-width: 95vw;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: #374151; }
+    .modal .modal-item { font-size: 13px; color: #64748b; margin-bottom: 18px; }
+    .modal label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .modal textarea {
+      width: 100%;
+      border: 1px solid #cbd5e0;
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal textarea:focus { border-color: #f97316; }
+    .modal .field-group { margin-bottom: 16px; }
+
+    .modal .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .btn-cancel {
+      padding: 8px 20px;
+      border: 1px solid #cbd5e0;
+      border-radius: 7px;
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .btn-save {
+      padding: 8px 22px;
+      background: #f97316;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-save:hover { background: #ea580c; }
+
+    .toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: #16a34a;
+      color: white;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: #64748b;
+    }
+    .spinner {
+      display: inline-block;
+      width: 28px; height: 28px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #f97316;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡</div>
+  <div>
+    <h1>ติดตามงาน กสฟ. ปี 2569</h1>
+    <p>กองกิจการสถานีไฟฟ้า — ระบบติดตามสถานะงาน</p>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="🔍  ค้นหารายการงาน..." oninput="filterTable()" />
+  <div class="status-badge"><span></span>เชื่อมต่อ Google Sheets</div>
+</div>
+
+<div class="table-wrap">
+  <div class="loading" id="loadingDiv">
+    <div class="spinner"></div><br>กำลังโหลดข้อมูลจาก Google Sheets...
+  </div>
+  <table id="mainTable" style="display:none">
+    <thead>
+      <tr>
+        <th>ลำดับ</th>
+        <th>รายการ</th>
+        <th>แผนการดำเนินงาน</th>
+        <th>ขั้นตอนปัจจุบัน</th>
+        <th>อัพเดทเมื่อ</th>
+        <th>ผู้รับผิดชอบ</th>
+        <th>แก้ไข</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>แก้ไขรายการงาน</h2>
+    <div class="modal-item" id="modalItemName"></div>
+    <div class="field-group">
+      <label>แผนการดำเนินงาน</label>
+      <textarea id="inputPlan" rows="4"></textarea>
+    </div>
+    <div class="field-group">
+      <label>ขั้นตอนปัจจุบัน</label>
+      <textarea id="inputStep" rows="4"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveRow()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SHEET_ID = '12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk';
+  const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+
+  /* ข้อมูล fallback จาก Excel (ใช้เมื่อ Sheets ยังไม่ public) */
+  const FALLBACK = [
+    [1,"Access Control เพิ่มเติมของสถานีไฟฟ้าที่เหลือ","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (240 วัน)\n- เดือน ส.ค. ปี 71 ตรวจรับ (30 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7"],
+    [2,"CSR ชุมชนบริเวณโดยรอบสถานีไฟฟ้า","","","","ชอสฟ.(ธ) / วศฟ.6"],
+    [3,"ICT สถานีไฟฟ้า","","","","ชผสฟ.2 (ไกรวิชญ์)"],
+    [4,"Inplant training","","","","สฟ.1"],
+    [5,"MN คู่มือการปฏิบัติงานภายในสถานีไฟฟ้า","","","","วศฟ.7"],
+    [6,"Walkie talkie","- เดือน มี.ค. ปี 69 ฝคฐ. ส่งวิทยุ walkie talkie ให้ กสฟ."," - ฝคฐ. จัดหาวิทยุ Walkie talkie เรียบร้อยแล้ว\n- อยู่ระหว่างขออนุญาตใช้งานจาก กสทช.","","วศฟ.7"],
+    [7,"เครื่องตัดกิ่งไม้ เครื่องละ 7,000 บาท จำนวน 3 เครื่อง","","","","ประพันธ์"],
+    [8,"เครื่องวัดความเป็นฉนวน Mega Ohm meter จำนวน 2 เครื่อง","","","","ศุภโรจน์"],
+    [9,"เงินรองจ่าย (ติดตามการใช้งานระบบเงินรองจ่าย)","","","","ชทฟ.7 (ประพันธ์)"],
+    [10,"โครงการ Thermal Camera","","","","ชผสฟ.2 (ไกรวิชญ์)"],
+    [11,"การจัดหา Sim Card / ยกเลิก Wifi","- เดือน ก.พ. ปี 69 จัดทำบันทึกขออนุมัติใช้ SIM Card\n- เดือน มี.ค. ปี 69 ได้รับอนุมัติ\n- เดือน เม.ย. ปี 69 ฝคฐ. จัดหา SIM Card","อยู่ระหว่างจัดทำบันทึกขออนุมัติใช้ SIM Card","","วศฟ.7"],
+    [12,"ค่าทดสอบเครื่องมือวัดแสงประจำปี","","","","ปรีชา"],
+    [13,"ค่าทดสอบเครื่องวัดปริมาณแอลกอฮอล์ประจำปี","","","","ภาสกร"],
+    [14,"ค่าทดสอบถุงมือยาง","","","","ปรีชา"],
+    [15,"ค่าหมึก Printer แบบ Laser","","","","มธ. / กสฟ."],
+    [16,"งานจ้างช่างไฟฟ้าประจำศูนย์ฯ Unmanned substation","","","","สฟ.2"],
+    [17,"งานจ้างช่างไฟฟ้าประจำสถานีต้นทาง","","","","สฟ.2"],
+    [18,"งานจ้างช่างไฟฟ้าประจำสถานีย่อย","","","","สฟ.2"],
+    [19,"งานจ้างทำความสะอาดหลังคา","","","","ภาสกร"],
+    [20,"งานจ้างพนักงานประจำศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","","","","สฟ.3"],
+    [21,"จัดซื้อ Intercom ของศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7"],
+    [22,"จัดซื้อแบตเตอร์รี่ Emergency light จำนวน 285 ตัว","","","","ศุภโรจน์"],
+    [23,"จัดซื้อสถานะประตูรั้วสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7"],
+    [24,"จัดทำ Dashboard งบประมาณ ฝคฟ.","","","","วศฟ.6"],
+    [25,"จัดทำรายการติดตามงาน กสฟ.","","","","วศฟ.6"],
+    [26,"จัดหา Notebook ที่มี Auto CAD","","","","แผนก จซ."],
+    [27,"จ้างเจ้าหน้าที่รักษาความปลอดภัย (อผศ.)","","","","ประพันธ์"],
+    [28,"จ้างช่างซ่อมบำรุงอาคารสถานีไฟฟ้า (จซ.)","","","","จซ."],
+    [29,"จ้างซ่อมบำรุงอุปกรณ์ Guard tour","","","","ชทฟ.7 / 3 แผนก"],
+    [30,"จ้างทำความสะอาด ศูนย์รักษาความปลอดภัย พระประแดง","","","","ภาสกร"],
+    [31,"จ้างทำความสะอาดสถานีไฟฟ้าและสวิตช์ชิ่ง 172 สถานี","","","","สฟ.1"],
+    [32,"จ้างทำความสะอาดสถานีย่อยวัดเลียบและอาคารสำนักงาน กสฟ.","","","","ภาสกร"],
+    [33,"ซ้อมแผนการป้องกันฯ (เหตุอุทกภัย)","","","","สฟ.1"],
+    [34,"ซ้อมแผนการป้องกันฯ (การก่อวินาศกรรม)","","","","สฟ.1"],
+    [35,"ซ่อมบำรุงรักษาประตูม้วนที่สถานีไฟฟ้า (5 สถานี)","","","","วันชนะ"],
+    [36,"ติดตามกล้องวงจรปิด ระยะที่ 4","- บรรจุลงในแผน ICT ปี 71\n- เริ่มดำเนินการปี 72","","","วศฟ.7"],
+    [37,"ติดตามงาน 3S (ทำบันทึกสรุป/แนบรายงานประชุม)","","ดำเนินการจัดรายงานสรุปการประชุมฯ ครั้งที่ 1/2569 เรียบร้อยแล้ว","","คณะทำงาน / วศฟ.7"],
+    [38,"ติดตามระบบป้องปรามผู้บุกรุก","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (300 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7"],
+    [39,"ถุงมือยาง 30 kV จำนวน 5 คู่ พร้อมค่าทดสอบ","","","","ประพันธ์"],
+    [40,"น้ำดื่ม เดือนละ 400 ถัง ราคาถังละ 50 บาท","","","","ประพันธ์"],
+    [41,"ประกันภัยสำหรับสถานีย่อยวชิรพยาบาล","","","","ชทฟ.7 (ปรีชา)"],
+    [42,"ปรับปรุงคอกหม้อแปลง 7 สถานี","","","","วศฟ.6"],
+    [43,"ปรับปรุงภูมิทัศน์ปทุมวัน","","","","คณะทำงาน / หผสฟ.1"],
+    [44,"ป้องกันและกำจัดปลวกด้วยระบบเหยื่อ สต.ชิดลม และแจ้งวัฒนะ","","","","ภาสกร"],
+    [45,"ป้องกันและกำจัดปลวกสถานีไฟฟ้า (169 สถานี)","","","","ภาสกร"],
+    [46,"ปั๊มน้ำอัตโนมัติ แบบแรงดันคงที่ จำนวน 5 เครื่อง","","","","ศุภโรจน์"],
+    [47,"ป้ายประดับ/ธงประดับ/ธงชาติ","","","","มธ. / กสฟ."],
+    [48,"ผ้ารองในหมวก (หมวกหนอน)","","","","ประพันธ์"],
+    [49,"พิมพ์เอกสารต่างๆ สำหรับสถานีไฟฟ้า","","","","ปรีชา"],
+    [50,"รายงานผลการจัดซื้อจัดจ้าง (ต่ำกว่า 100,000 บาท) รายไตรมาส","","","","มธ."],
+    [51,"อุปกรณ์ประกอบคอมพิวเตอร์ (เม้า, คีบอร์ด, flashdrive)","","","","ชทฟ.7 / 4 แผนก"],
+  ];
+
+  let tableData = [];
+  let editingRow  = null;
+
+  /* ---------- Load data ---------- */
+  async function loadData() {
+    try {
+      const res = await fetch(CSV_URL, { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text).slice(1); // skip header
+      tableData = rows.map(r => ({
+        no:    r[0] || '',
+        item:  r[1] || '',
+        plan:  r[2] || '',
+        step:  r[3] || '',
+        date:  r[4] || '',
+        owner: r[5] || '',
+      }));
+    } catch {
+      tableData = FALLBACK.map(r => ({
+        no: r[0], item: r[1], plan: r[2], step: r[3], date: r[4], owner: r[5]
+      }));
+    }
+    renderTable(tableData);
+    document.getElementById('loadingDiv').style.display = 'none';
+    document.getElementById('mainTable').style.display  = 'table';
+  }
+
+  function parseCSV(text) {
+    const rows = []; let row = []; let cell = ''; let inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+        else if (c === '"') inQ = false;
+        else cell += c;
+      } else {
+        if (c === '"') inQ = true;
+        else if (c === ',') { row.push(cell); cell = ''; }
+        else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+        else if (c !== '\r') cell += c;
+      }
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  /* ---------- Render ---------- */
+  function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = data.map((r, idx) => `
+      <tr data-idx="${idx}">
+        <td>${r.no}</td>
+        <td class="col-item">${esc(r.item)}</td>
+        <td class="col-plan">${r.plan ? esc(r.plan) : '<span class="empty-cell">—</span>'}</td>
+        <td class="col-step">${r.step ? esc(r.step) : '<span class="empty-cell">—</span>'}</td>
+        <td class="col-date">${r.date || ''}</td>
+        <td class="col-owner">${esc(r.owner)}</td>
+        <td><button class="btn-update" onclick="openModal(${idx})">แก้ไข</button></td>
+      </tr>`).join('');
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ---------- Filter ---------- */
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = q ? tableData.filter(r =>
+      r.item.toLowerCase().includes(q) ||
+      r.plan.toLowerCase().includes(q) ||
+      r.step.toLowerCase().includes(q) ||
+      r.owner.toLowerCase().includes(q)
+    ) : tableData;
+    renderTable(filtered);
+  }
+
+  /* ---------- Modal ---------- */
+  function openModal(idx) {
+    editingRow = idx;
+    const r = tableData[idx];
+    document.getElementById('modalItemName').textContent = `${r.no}. ${r.item}`;
+    document.getElementById('inputPlan').value = r.plan;
+    document.getElementById('inputStep').value = r.step;
+    document.getElementById('overlay').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('active');
+    editingRow = null;
+  }
+
+  function saveRow() {
+    if (editingRow === null) return;
+    const now = new Date();
+    const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()+543}`;
+
+    tableData[editingRow].plan = document.getElementById('inputPlan').value;
+    tableData[editingRow].step = document.getElementById('inputStep').value;
+    tableData[editingRow].date = dateStr;
+
+    filterTable();
+    closeModal();
+    showToast('บันทึกข้อมูลเรียบร้อย — ' + dateStr);
+
+    /* TODO: เขียนกลับ Google Sheets ด้วย Sheets API / Apps Script */
+  }
+
+  /* ---------- Toast ---------- */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* close modal on overlay click */
+  document.getElementById('overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  loadData();
+</script>
+</body>
+</html>
