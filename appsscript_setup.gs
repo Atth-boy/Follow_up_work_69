@@ -84,14 +84,29 @@ function getOrCreateSheet(ss) {
   return sheet;
 }
 
+// ---------- แปลง Sheets time (decimal) → "HH:MM" ----------
+function cellToTime(val) {
+  if (typeof val === 'number') {
+    const totalMin = Math.round(val * 24 * 60);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  }
+  return val ? String(val) : '';
+}
+
 // ---------- Read: คืน records ทั้งหมด ----------
 function handleRead(sheet) {
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return jsonOk([]);
   const headers = data[0];
+  const timeFields = ['timeFrom', 'timeTo'];
   const rows = data.slice(1).map((r, i) => {
     const obj = { _row: i + 2 };
-    headers.forEach((h, j) => { if (h) obj[h] = r[j] || ''; });
+    headers.forEach((h, j) => {
+      if (!h) return;
+      obj[h] = timeFields.includes(h) ? cellToTime(r[j]) : (r[j] || '');
+    });
     return obj;
   });
   return jsonOk(rows);
@@ -116,6 +131,12 @@ function handleAdd(sheet, params) {
     data.timeTo     || '',
     data.workDetail || '',
   ]);
+  // force timeFrom/timeTo columns เป็น plain text เพื่อป้องกัน Sheets แปลงเป็น decimal
+  const newRow = sheet.getLastRow();
+  sheet.getRange(newRow, COL.timeFrom).setNumberFormat('@');
+  sheet.getRange(newRow, COL.timeTo).setNumberFormat('@');
+  sheet.getRange(newRow, COL.timeFrom).setValue(data.timeFrom || '');
+  sheet.getRange(newRow, COL.timeTo).setValue(data.timeTo || '');
   return jsonOk({ status: 'ok' });
 }
 
@@ -129,9 +150,12 @@ function handleUpdate(sheet, params) {
     'area','name','empId','site','dept','div','tel',
     'dateFrom','dateTo','timeFrom','timeTo','workDetail'
   ];
+  const timeFields = ['timeFrom', 'timeTo'];
   updatableFields.forEach(key => {
     if (data[key] !== undefined) {
-      sheet.getRange(row, COL[key]).setValue(data[key]);
+      const cell = sheet.getRange(row, COL[key]);
+      if (timeFields.includes(key)) cell.setNumberFormat('@');
+      cell.setValue(data[key]);
     }
   });
   return jsonOk({ status: 'ok' });
