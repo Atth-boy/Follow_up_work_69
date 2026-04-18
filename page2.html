@@ -351,7 +351,7 @@
       margin-bottom: 6px;
     }
     .field label .req { color: #ef4444; margin-left: 2px; }
-    .field input, .field select {
+    .field input, .field select, .field textarea {
       width: 100%;
       padding: 9px 12px;
       border: 1px solid #cbd5e0;
@@ -362,7 +362,8 @@
       transition: border-color 0.15s;
       background: white;
     }
-    .field input:focus, .field select:focus { border-color: #f97316; }
+    .field textarea { resize: vertical; min-height: 72px; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #f97316; }
 
     .date-range-row {
       display: flex; align-items: center; gap: 8px;
@@ -442,6 +443,28 @@
     .dot-green  { background:#22c55e; }
     .dot-yellow { background:#f59e0b; }
     .dot-red    { background:#ef4444; }
+
+    /* ===== DETAIL POPUP ===== */
+    .btn-detail {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #f97316;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .btn-detail:hover { color: #ea580c; }
+    .detail-clamp {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
 
     /* ===== TOAST ===== */
     .toast {
@@ -623,6 +646,8 @@
         <th>กอง</th>
         <th>เบอร์ติดต่อ</th>
         <th>ช่วงวันที่</th>
+        <th>เวลา</th>
+        <th>รายละเอียดงาน</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -857,11 +882,34 @@
           <input type="date" id="fDateTo" />
         </div>
       </div>
+      <div class="field full">
+        <label>เวลาในการปฏิบัติงาน <span class="req">*</span></label>
+        <div class="date-range-row">
+          <select id="fTimeFrom" style="flex:1"></select>
+          <span class="sep">ถึง</span>
+          <select id="fTimeTo" style="flex:1"></select>
+        </div>
+      </div>
+      <div class="field full">
+        <label>รายละเอียดงานที่เข้าปฏิบัติงาน <span class="req">*</span></label>
+        <textarea id="fWorkDetail" rows="3" placeholder="ระบุรายละเอียดงานที่เข้าปฏิบัติงาน..."></textarea>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeForm()">ยกเลิก</button>
       <button class="btn-save" onclick="submitForm()">บันทึก</button>
     </div>
+  </div>
+</div>
+
+<!-- Detail Popup -->
+<div id="detailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;align-items:center;justify-content:center" onclick="if(event.target===this)closeDetail()">
+  <div style="background:white;border-radius:12px;width:480px;max-width:94vw;max-height:80vh;padding:24px;box-shadow:0 8px 30px rgba(0,0,0,0.2);overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <strong style="font-size:15px;color:#374151">รายละเอียดงานที่เข้าปฏิบัติงาน</strong>
+      <button onclick="closeDetail()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#94a3b8;line-height:1;padding:4px">✕</button>
+    </div>
+    <div id="detailText" style="font-size:14px;color:#374151;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:2;min-height:160px"></div>
   </div>
 </div>
 
@@ -875,6 +923,23 @@
     'พระประแดง':  'e199e876c25e6cea55393968e59c89dc394613521eb37734ce60ce53cd3c2d78',
     'ภาพรวม':     'abe7e80850b4460618ffcfb684906568924c9afe6f07a3fb48c588c554290e1b',
   };
+
+  /* ===== Time select builder ===== */
+  function buildTimeOptions(selectId, selectedVal) {
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '';
+    for (let h = 0; h <= 24; h++) {
+      const mList = h < 24 ? [0, 30] : [0];
+      mList.forEach(m => {
+        const val = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        if (val === selectedVal) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+  }
 
   async function hashPassword(pw) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
@@ -928,8 +993,11 @@
         area: r.area||'', name: r.name||'', empId: r.empId||'',
         site: r.site||'', dept: r.dept||'', div:  r.div||'',
         tel:  r.tel||'',
-        dateFrom: normalizeDate(r.dateFrom||''),
-        dateTo:   normalizeDate(r.dateTo||''),
+        dateFrom:   normalizeDate(r.dateFrom||''),
+        dateTo:     normalizeDate(r.dateTo||''),
+        timeFrom:   r.timeFrom||'',
+        timeTo:     r.timeTo||'',
+        workDetail: r.workDetail||'',
       }));
       setSheetStatus('ok');
     } catch(e) {
@@ -1162,9 +1230,15 @@
             <div class="card-field"><label>กอง</label><span>${esc(r.div)||'—'}</span></div>
             <div class="card-field"><label>เบอร์</label><span>${esc(r.tel)||'—'}</span></div>
           </div>
-          <div class="card-dates">
+          <div class="card-dates" style="margin-bottom:6px">
             📅 ${thDate(r.dateFrom)}${r.dateFrom !== r.dateTo ? ` → ${thDate(r.dateTo)}` : ''}
+            ${r.timeFrom ? `&nbsp;·&nbsp;⏰ ${r.timeFrom}${r.timeTo ? ` – ${r.timeTo}` : ''}` : ''}
           </div>
+          ${r.workDetail ? `
+          <div style="background:#f8fafc;border-radius:6px;padding:6px 8px">
+            <div class="detail-clamp" style="font-size:12px;color:#374151">${esc(r.workDetail)}</div>
+            <button class="btn-detail" onclick="showDetail(${r._row})">ดูเพิ่มเติม ›</button>
+          </div>` : ''}
         </div>`).join('');
 
       // --- render table rows (desktop) ---
@@ -1192,6 +1266,13 @@
               ${thDate(r.dateFrom)}
               ${r.dateFrom !== r.dateTo ? `<span class="arrow">→</span> ${thDate(r.dateTo)}` : ''}
             </span>
+          </td>
+          <td style="white-space:nowrap;font-size:12px;color:#374151">${r.timeFrom ? `${r.timeFrom}${r.timeTo ? ` – ${r.timeTo}` : ''}` : '<span style="color:#cbd5e0">—</span>'}</td>
+          <td style="min-width:160px;max-width:220px">
+            ${r.workDetail
+              ? `<div class="detail-clamp" style="font-size:12px;color:#374151;max-width:200px">${esc(r.workDetail)}</div>
+                 <button class="btn-detail" onclick="showDetail(${r._row})">ดูเพิ่มเติม ›</button>`
+              : '<span style="color:#cbd5e0;font-style:italic;font-size:12px">—</span>'}
           </td>
         </tr>`).join('');
     }
@@ -1240,8 +1321,11 @@
     document.getElementById('fDept').value     = r.dept;
     document.getElementById('fDiv').value      = r.div;
     document.getElementById('fTel').value      = r.tel;
-    document.getElementById('fDateFrom').value = r.dateFrom;
-    document.getElementById('fDateTo').value   = r.dateTo;
+    document.getElementById('fDateFrom').value   = r.dateFrom;
+    document.getElementById('fDateTo').value     = r.dateTo;
+    document.getElementById('fWorkDetail').value = r.workDetail || '';
+    buildTimeOptions('fTimeFrom', r.timeFrom || '08:00');
+    buildTimeOptions('fTimeTo',   r.timeTo   || '17:00');
     document.querySelector('#overlay .modal-header h2').textContent = 'แก้ไขข้อมูลผู้เข้าสถานี';
     document.getElementById('overlay').classList.add('active');
   }
@@ -1272,10 +1356,13 @@
   function openForm() {
     editingRowNum = null;
     document.querySelector('#overlay .modal-header h2').textContent = 'แจ้งความประสงค์เข้าสถานีไฟฟ้า';
-    document.getElementById('fDateFrom').value = selectedDate;
-    document.getElementById('fDateTo').value   = selectedDate;
+    document.getElementById('fDateFrom').value  = selectedDate;
+    document.getElementById('fDateTo').value    = selectedDate;
+    document.getElementById('fWorkDetail').value = '';
     ['fName','fEmpId','fSite','fDept','fDiv','fTel'].forEach(id =>
       document.getElementById(id).value = '');
+    buildTimeOptions('fTimeFrom', '08:00');
+    buildTimeOptions('fTimeTo',   '17:00');
     document.getElementById('overlay').classList.add('active');
   }
 
@@ -1291,10 +1378,13 @@
     const dept     = document.getElementById('fDept').value.trim();
     const div      = document.getElementById('fDiv').value.trim();
     const tel      = document.getElementById('fTel').value.trim();
-    const dateFrom = document.getElementById('fDateFrom').value;
-    const dateTo   = document.getElementById('fDateTo').value;
+    const dateFrom   = document.getElementById('fDateFrom').value;
+    const dateTo     = document.getElementById('fDateTo').value;
+    const timeFrom   = document.getElementById('fTimeFrom').value;
+    const timeTo     = document.getElementById('fTimeTo').value;
+    const workDetail = document.getElementById('fWorkDetail').value.trim();
 
-    if (!name || !empId || !site || !dept || !div || !tel || !dateFrom || !dateTo) {
+    if (!name || !empId || !site || !dept || !div || !tel || !dateFrom || !dateTo || !workDetail) {
       showToast('กรุณากรอกข้อมูลให้ครบทุกช่อง', 'error');
       return;
     }
@@ -1304,7 +1394,7 @@
     }
 
     const isEdit = editingRowNum !== null;
-    const record = { area: currentArea, name, empId, site, dept, div, tel, dateFrom, dateTo };
+    const record = { area: currentArea, name, empId, site, dept, div, tel, dateFrom, dateTo, timeFrom, timeTo, workDetail };
 
     // อัปเดต UI ทันที (optimistic)
     if (isEdit) {
@@ -1329,6 +1419,17 @@
     } else {
       showToast('บันทึกเฉพาะในหน้านี้ — ยังไม่ได้เชื่อม Sheets', 'warn');
     }
+  }
+
+  /* ===== Detail Popup ===== */
+  function showDetail(rowNum) {
+    const r = records.find(x => x._row === rowNum);
+    if (!r) return;
+    document.getElementById('detailText').textContent = r.workDetail;
+    document.getElementById('detailOverlay').style.display = 'flex';
+  }
+  function closeDetail() {
+    document.getElementById('detailOverlay').style.display = 'none';
   }
 
   /* ===== Toast ===== */
