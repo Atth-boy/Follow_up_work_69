@@ -511,6 +511,13 @@
       .toolbar-title { font-size: 13px; }
       #sheetStatus { font-size: 11px; }
       .btn-add { font-size: 12px; padding: 7px 12px; white-space: nowrap; }
+      /* เมนูบน card ใช้ absolute แทน fixed เพื่อไม่ให้หลุด viewport */
+      .record-card .action-menu {
+        position: absolute;
+        right: 8px;
+        top: 44px;
+        left: auto !important;
+      }
       /* ซ่อนตาราง แสดง card */
       .table-wrap { display: none; }
       #cardContainer { display: block; }
@@ -1193,21 +1200,23 @@
   function toggleMenu(rowNum, event, btnEl) {
     event.stopPropagation();
     event.preventDefault();
-    const menus = document.querySelectorAll('.action-menu');
     const target = document.getElementById('menu_' + rowNum);
     const wasOpen = target && target.classList.contains('show');
-    menus.forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.action-menu').forEach(m => m.classList.remove('show'));
     if (!wasOpen && target) {
-      const btn = btnEl || event.currentTarget;
-      const rect = btn.getBoundingClientRect();
-      const menuWidth = 140;
-      target.style.top = (rect.bottom + 4) + 'px';
-      if (rect.left + menuWidth > window.innerWidth - 8) {
-        target.style.left = '';
-        target.style.right = (window.innerWidth - rect.right) + 'px';
-      } else {
-        target.style.right = '';
-        target.style.left = rect.left + 'px';
+      // desktop: คำนวณพิกัด fixed; mobile: CSS absolute จัดการเอง
+      if (window.innerWidth > 640) {
+        const btn = btnEl || event.currentTarget;
+        const rect = btn.getBoundingClientRect();
+        const menuWidth = 140;
+        target.style.top = (rect.bottom + 4) + 'px';
+        if (rect.left + menuWidth > window.innerWidth - 8) {
+          target.style.left = '';
+          target.style.right = (window.innerWidth - rect.right) + 'px';
+        } else {
+          target.style.right = '';
+          target.style.left = rect.left + 'px';
+        }
       }
       target.classList.add('show');
       _menuOpenTime = Date.now();
