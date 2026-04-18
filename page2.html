@@ -2,7 +2,12 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" id="vp" />
+  <script>
+    if (window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      document.getElementById('vp').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    }
+  </script>
   <title>บันทึกผู้เข้าปฏิบัติงานในสถานีไฟฟ้า</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
