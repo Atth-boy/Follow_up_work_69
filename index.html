@@ -210,6 +210,136 @@
       margin-bottom: 10px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- Card list (mobile) ---- */
+    .card-list { display: none; }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      header {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      header .logo { font-size: 26px; }
+      header h1 { font-size: 16px; }
+      header p  { font-size: 12px; }
+      header .contact { display: none; }
+
+      .toolbar {
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .toolbar input {
+        width: 100%;
+        font-size: 15px;
+        padding: 9px 14px;
+      }
+      .toolbar .status-badge { margin-left: 0; }
+
+      .table-wrap {
+        padding: 12px 12px;
+        overflow-x: visible;
+      }
+      #mainTable { display: none !important; }
+
+      /* Cards */
+      .card-list { display: block; }
+
+      .card {
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        padding: 14px 14px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+        border-left: 4px solid #f97316;
+      }
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .card-num {
+        background: #374151;
+        color: white;
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        line-height: 1.6;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a202c;
+        line-height: 1.4;
+        flex: 1;
+      }
+      .card-meta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        font-size: 12px;
+        padding-left: 2px;
+      }
+      .card-owner { color: #4b5563; font-weight: 500; }
+      .card-date  { color: #94a3b8; }
+      .card-section { margin-bottom: 8px; }
+      .card-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+      }
+      .card-text {
+        font-size: 13px;
+        color: #374151;
+        white-space: pre-line;
+        line-height: 1.5;
+      }
+      .card-empty { font-size: 12px; color: #cbd5e0; font-style: italic; }
+      .card-footer {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .btn-update-card {
+        background: #f97316;
+        color: white;
+        border: none;
+        padding: 9px 22px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: inherit;
+        font-weight: 600;
+        min-height: 44px;
+      }
+      .btn-update-card:active { background: #ea580c; }
+
+      /* Modal → bottom sheet */
+      .overlay { align-items: flex-end; }
+      .modal {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        padding: 20px 16px 32px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal textarea { font-size: 15px; min-height: 80px; }
+      .btn-cancel, .btn-save { min-height: 44px; font-size: 15px; }
+      .btn-save { flex: 1; }
+
+      .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -246,6 +376,7 @@
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
+  <div class="card-list" id="cardList"></div>
 </div>
 
 <!-- Modal -->
@@ -358,7 +489,8 @@
     }
     renderTable(tableData);
     document.getElementById('loadingDiv').style.display = 'none';
-    document.getElementById('mainTable').style.display  = 'table';
+    document.getElementById('mainTable').style.display  = '';
+    document.getElementById('cardList').style.display   = '';
   }
 
   function parseCSV(text) {
@@ -393,6 +525,33 @@
         <td class="col-owner">${esc(r.owner)}</td>
         <td><button class="btn-update" onclick="openModal(${r._idx})">แก้ไข</button></td>
       </tr>`).join('');
+    renderCards(data);
+  }
+
+  function renderCards(data) {
+    const list = document.getElementById('cardList');
+    list.innerHTML = data.map(r => `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-num">${r.no}</span>
+          <span class="card-title">${esc(r.item)}</span>
+        </div>
+        <div class="card-meta">
+          ${r.owner ? `<span class="card-owner">👤 ${esc(r.owner)}</span>` : ''}
+          ${r.date  ? `<span class="card-date">🕐 ${r.date}</span>` : ''}
+        </div>
+        ${r.plan ? `<div class="card-section">
+          <div class="card-label">แผนการดำเนินงาน</div>
+          <div class="card-text">${esc(r.plan)}</div>
+        </div>` : ''}
+        ${r.step ? `<div class="card-section">
+          <div class="card-label">ขั้นตอนปัจจุบัน</div>
+          <div class="card-text">${esc(r.step)}</div>
+        </div>` : ''}
+        <div class="card-footer">
+          <button class="btn-update-card" onclick="openModal(${r._idx})">แก้ไข</button>
+        </div>
+      </div>`).join('');
   }
 
   function esc(s) {
