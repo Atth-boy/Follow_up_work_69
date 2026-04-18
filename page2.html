@@ -475,8 +475,12 @@
     .card-empid { font-size: 12px; color: #64748b; margin-top: 2px; }
     .card-menu-btn {
       background: none; border: none; cursor: pointer;
-      font-size: 20px; color: #94a3b8; padding: 0 4px;
+      font-size: 20px; color: #94a3b8;
+      padding: 6px 10px; margin: -6px -6px;
       line-height: 1; flex-shrink: 0;
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
     }
     .card-grid {
       display: grid; grid-template-columns: 1fr 1fr;
@@ -1184,18 +1188,20 @@
   /* ===== Action Menu (⋮) ===== */
   let editingRowNum = null;  // null = add, number = edit sheet row
 
+  let _menuOpenTime = 0;
+
   function toggleMenu(rowNum, event) {
     event.stopPropagation();
+    event.preventDefault();
     const menus = document.querySelectorAll('.action-menu');
     const target = document.getElementById('menu_' + rowNum);
     const wasOpen = target && target.classList.contains('show');
     menus.forEach(m => m.classList.remove('show'));
     if (!wasOpen && target) {
-      const btn = event.currentTarget;
+      const btn = event.currentTarget || event.target.closest('button');
       const rect = btn.getBoundingClientRect();
       const menuWidth = 140;
       target.style.top = (rect.bottom + 4) + 'px';
-      // ถ้าเมนูหลุดขวา ให้ชิดขวาของปุ่มแทน
       if (rect.left + menuWidth > window.innerWidth - 8) {
         target.style.left = '';
         target.style.right = (window.innerWidth - rect.right) + 'px';
@@ -1204,6 +1210,7 @@
         target.style.left = rect.left + 'px';
       }
       target.classList.add('show');
+      _menuOpenTime = Date.now();
     }
   }
 
@@ -1246,6 +1253,7 @@
 
   /* ปิด menu เมื่อคลิกที่อื่น */
   document.addEventListener('click', () => {
+    if (Date.now() - _menuOpenTime < 300) return;
     document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
   });
 
