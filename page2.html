@@ -448,12 +448,63 @@
     .toast.show { opacity: 1; transform: translateY(0); }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 600px) {
-      header { padding: 14px 16px; }
-      .toolbar, .date-nav, .table-wrap { padding-left: 16px; padding-right: 16px; }
+    /* ===== CARD VIEW (mobile) ===== */
+    #cardContainer { display: none; padding: 0 16px 20px; }
+    .record-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .card-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .card-name { font-size: 15px; font-weight: 700; color: #1a202c; }
+    .card-empid { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .card-menu-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: #94a3b8; padding: 0 4px;
+      line-height: 1; flex-shrink: 0;
+    }
+    .card-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px 12px; margin-bottom: 10px;
+    }
+    .card-field label {
+      display: block; font-size: 11px; color: #94a3b8;
+      font-weight: 600; margin-bottom: 1px; text-transform: uppercase;
+    }
+    .card-field span { font-size: 13px; color: #374151; }
+    .card-dates {
+      background: #fff7ed; border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 12px; color: #ea580c; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 12px 14px; }
+      header h1 { font-size: 14px; }
+      header p { display: none; }
+      .area-tag { font-size: 11px; padding: 5px 10px; }
+      .date-nav { padding: 8px 12px; gap: 6px; }
+      .date-tab { padding: 6px 12px; font-size: 12px; }
+      .date-picker-wrap label { display: none; }
+      .toolbar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      .toolbar-title { font-size: 13px; }
+      #sheetStatus { font-size: 11px; }
+      .btn-add { font-size: 12px; padding: 7px 14px; }
+      /* ซ่อนตาราง แสดง card */
+      .table-wrap { display: none; }
+      #cardContainer { display: block; }
+      /* form */
       .form-grid { grid-template-columns: 1fr; }
       .form-grid .full { grid-column: 1; }
-      header h1 { font-size: 15px; }
+      .modal { padding: 20px 16px; }
     }
   </style>
 </head>
@@ -556,6 +607,9 @@
   </div>
 </div>
 
+<!-- Card view (mobile) -->
+<div id="cardContainer"></div>
+
 <!-- ===== FORM MODAL ===== -->
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -574,7 +628,187 @@
       </div>
       <div class="field full">
         <label>สถานีที่ขอเข้า <span class="req">*</span></label>
-        <input type="text" id="fSite" placeholder="เช่น สถานีไฟฟ้าบางรัก" />
+        <input type="text" id="fSite" list="siteList" placeholder="พิมพ์เพื่อค้นหาสถานี เช่น สถานีย่อยวัดเลียบ" autocomplete="off" />
+        <datalist id="siteList">
+          <option value="สถานีต้นทางถนนตก">
+          <option value="สถานีย่อยบางแค">
+          <option value="สถานีย่อยบางไผ่">
+          <option value="สถานีย่อยบางโพงพาง">
+          <option value="สถานีย่อยฉิมพลี">
+          <option value="สถานีย่อยลาดหญ้า">
+          <option value="สถานีย่อยมหาเมฆ">
+          <option value="สถานีย่อยมไหสวรรย์">
+          <option value="สถานีย่อยนนทรี">
+          <option value="สวิชชิ่งยูนิตนนทรี">
+          <option value="สถานีย่อยพรานนก">
+          <option value="สถานีย่อยเพชรเกษม">
+          <option value="สถานีย่อยธนบุรี">
+          <option value="สถานีย่อยตากสิน">
+          <option value="สถานีย่อยยานนาวา">
+          <option value="สวิชชิ่งยูนิตท่าพระ">
+          <option value="สวิชชิ่งยูนิตหลักสอง">
+          <option value="สวิชชิ่งยูนิตบางหว้า">
+          <option value="สถานีย่อยบางโคล่">
+          <option value="สถานีต้นทางรัชดาภิเษก">
+          <option value="สถานีต้นทางวิภาวดี">
+          <option value="สถานีย่อยบางขุนพรหม">
+          <option value="สถานีย่อยดินแดง">
+          <option value="สถานีย่อยห้วยขวาง">
+          <option value="สถานีย่อยหมอชิต">
+          <option value="สถานีย่อยบางยี่ขัน">
+          <option value="สถานีย่อยนางเลิ้ง">
+          <option value="สถานีย่อยประดิพัทธิ์">
+          <option value="สถานีย่อยพญาไท">
+          <option value="สถานีย่อยสะพานดำ">
+          <option value="สถานีย่อยโยธี">
+          <option value="สถานีย่อยสายลม">
+          <option value="สถานีย่อยสามเสน">
+          <option value="สถานีย่อยแสนแสบ">
+          <option value="สถานีย่อยวัดเลียบ">
+          <option value="สถานีย่อยรุ่งประชา">
+          <option value="สวิชชิ่งยูนิตเตาปูน">
+          <option value="สถานีย่อยวชิรพยาบาล">
+          <option value="สถานีต้นทางชิดลม">
+          <option value="สถานีย่อยกิ่งเพชร">
+          <option value="สถานีย่อยคลองเตย">
+          <option value="สถานีย่อยลุมพินี">
+          <option value="สถานีย่อยไผ่สิงโต">
+          <option value="สถานีย่อยพระโขนง">
+          <option value="สถานีย่อยปทุมวัน">
+          <option value="สถานีย่อยสายน้ำทิพย์">
+          <option value="สถานีย่อยสามย่าน">
+          <option value="สวิชชิ่งยูนิตเดอะมาเก็ต">
+          <option value="สถานีย่อยสีลม">
+          <option value="สถานีย่อยสุรศักดิ์">
+          <option value="สถานีย่อยศรีเวียง">
+          <option value="สถานีย่อยสี่พระยา">
+          <option value="สถานีย่อยสุรวงศ์">
+          <option value="สถานีย่อยวังเพชรบูรณ์">
+          <option value="สถานีย่อยเย็นอากาศ">
+          <option value="สถานีย่อยมักกะสัน">
+          <option value="สถานีต้นทางบางกะปิ">
+          <option value="สถานีย่อยบางชัน">
+          <option value="สถานีย่อยฉลองกรุง">
+          <option value="สถานีย่อยเอกมัย">
+          <option value="สถานีย่อยลาดกระบัง">
+          <option value="สวิชชิ่งยูนิตลาดกระบัง">
+          <option value="สถานีย่อยมีนบุรี">
+          <option value="สถานีต้นทางหนองจอก">
+          <option value="สถานีย่อยนานา">
+          <option value="สถานีต้นทางอ่อนนุช">
+          <option value="สถานีย่อยประสานมิตร">
+          <option value="สถานีย่อยพัฒนาการ">
+          <option value="สถานีย่อยร่มเกล้า">
+          <option value="สถานีย่อยราชปรารภ">
+          <option value="สถานีย่อยรามอินทรา">
+          <option value="สถานีย่อยสุวินทวงศ์">
+          <option value="สถานีย่อยศูนย์วิจัย">
+          <option value="สถานีย่อยพร้อมพงษ์">
+          <option value="สถานีย่อยมิตรไมตรี">
+          <option value="สถานีย่อยคลองกระเทียม">
+          <option value="สถานีย่อยนิมิตรใหม่">
+          <option value="สถานีต้นทางลาดพร้าว">
+          <option value="สถานีย่อยจันทร์เกษม">
+          <option value="สถานีย่อยจตุจักร">
+          <option value="สถานีย่อยดอนเมือง">
+          <option value="สถานีย่อยเกาะกลาง">
+          <option value="สถานีย่อยเกษตร">
+          <option value="สถานีย่อยคลองจั่น">
+          <option value="สถานีย่อยคลองใหม่">
+          <option value="สถานีย่อยคันนายาว">
+          <option value="สถานีย่อยหลักสี่">
+          <option value="สถานีย่อยนวลจันทร์">
+          <option value="สถานีย่อยประชาชื่น">
+          <option value="สถานีย่อยรามคำแหง">
+          <option value="สถานีย่อยสะพานใหม่">
+          <option value="สถานีย่อยทรงสะอาด">
+          <option value="สถานีย่อยทุ่งสองห้อง">
+          <option value="สถานีย่อยวังทองหลาง">
+          <option value="สถานีย่อยลาดปลาเค้า">
+          <option value="สถานีต้นทางบางซื่อ">
+          <option value="สถานีย่อยพลับพลา">
+          <option value="สถานีย่อยออเงิน">
+          <option value="สถานีต้นทางคลองรังสิต">
+          <option value="สถานีย่อยบางบัวทอง">
+          <option value="สถานีย่อยบางพูด">
+          <option value="สถานีย่อยบางรักใหญ่">
+          <option value="สถานีย่อยบางซ่อน">
+          <option value="สถานีต้นทางแจ้งวัฒนะ">
+          <option value="สถานีย่อยคลองมหาสวัสดิ์">
+          <option value="สถานีย่อยคลองสิบศอก">
+          <option value="สถานีย่อยขุนศรี">
+          <option value="สถานีย่อยเมืองทอง 1">
+          <option value="สถานีย่อยเมืองทอง 3">
+          <option value="สถานีย่อยชลประทาน">
+          <option value="สถานีต้นทางพระนครเหนือ">
+          <option value="สถานีย่อยนนทบุรี">
+          <option value="สถานีย่อยปากเกร็ด">
+          <option value="สถานีย่อยสนามบินน้ำ">
+          <option value="สถานีต้นทางไทรน้อย">
+          <option value="สถานีย่อยสวนใหญ่">
+          <option value="สถานีย่อยรัตนาธิเบศร์">
+          <option value="สถานีย่อยบางเลน">
+          <option value="สถานีย่อยชัยพฤกษ์">
+          <option value="สวิชชิ่งยูนิตคลองบางไผ่">
+          <option value="สถานีย่อยคลองวัดสิงห์">
+          <option value="สถานีย่อยธนบุรีรมย์">
+          <option value="สถานีย่อยบางปลากด">
+          <option value="สถานีย่อยเอกชัย">
+          <option value="สถานีต้นทางบางกอกน้อย">
+          <option value="สถานีย่อยครุใน">
+          <option value="สถานีย่อยวัดคู่สร้าง">
+          <option value="สถานีย่อยวัดกำแพง">
+          <option value="สถานีต้นทางธนบุรีใต้">
+          <option value="สถานีย่อยพระประแดง">
+          <option value="สถานีย่อยทวีวัฒนา">
+          <option value="สถานีย่อยหนองแขม">
+          <option value="สถานีย่อยบางบอน">
+          <option value="สถานีย่อยบางมด">
+          <option value="สถานีย่อยคลองสนามชัย">
+          <option value="สถานีย่อยคลองสรรพสามิต">
+          <option value="สถานีย่อยวัดประชาบำรุง">
+          <option value="สถานีย่อยบางกระดี่">
+          <option value="สถานีย่อยรัตนราช">
+          <option value="สถานีย่อยบางโฉลง">
+          <option value="สวิชชิ่งยูนิตบางโฉลง">
+          <option value="สถานีย่อยประเวศ">
+          <option value="สถานีย่อยศรีเอี่ยม">
+          <option value="สถานีย่อยบางน้ำจืด">
+          <option value="สถานีย่อยบางตำหรุ">
+          <option value="สถานีย่อยบางปลา">
+          <option value="สถานีย่อยบางนา">
+          <option value="สถานีย่อยทับยาว">
+          <option value="สถานีย่อยบางเสาธง">
+          <option value="สถานีย่อยคลองร้อย">
+          <option value="สถานีย่อยจระเข้ใหญ่">
+          <option value="สถานีต้นทางเทพารักษ์">
+          <option value="สถานีย่อยสวนหลวง">
+          <option value="สถานีย่อยเมืองใหม่">
+          <option value="สถานีย่อยเสาระหง">
+          <option value="สถานีต้นทางบางพลี">
+          <option value="สถานีย่อยกิ่งแก้ว">
+          <option value="สถานีย่อยหลวงแพ่ง">
+          <option value="สถานีต้นทางคลองด่าน">
+          <option value="สถานีย่อยบางปู">
+          <option value="สถานีย่อยบางปิ้ง">
+          <option value="สถานีย่อยท้ายบ้าน">
+          <option value="สถานีย่อยปู่เจ้า">
+          <option value="สถานีย่อยบางเมือง">
+          <option value="สถานีย่อยพุทธรักษา">
+          <option value="สถานีย่อยแพรกษา">
+          <option value="สถานีย่อยคอต่อ">
+          <option value="สถานีย่อยไม้อัด">
+          <option value="สถานีย่อยสวนส้ม">
+          <option value="สถานีย่อยท้องคุ้ง">
+          <option value="สถานีย่อยปากน้ำ">
+          <option value="สถานีย่อยแบริ่ง">
+          <option value="สถานีย่อยบางกระเจ้า">
+          <option value="สถานีสับเปลี่ยนสำโรง">
+          <option value="สถานีย่อยราษฎร์บูรณะ">
+          <option value="สวิชชิ่งยูนิตนิคมบางปู">
+          <option value="สถานีต้นทางพระนครใต้">
+          <option value="สถานีย่อยแจงร้อน">
+        </datalist>
       </div>
       <div class="field">
         <label>ฝ่าย <span class="req">*</span></label>
@@ -869,13 +1103,44 @@
       if (thArea) thArea.remove();
     }
 
+    const cardContainer = document.getElementById('cardContainer');
+
     if (filtered.length === 0) {
       table.style.display = 'none';
       empty.style.display = 'block';
+      cardContainer.innerHTML = '';
     } else {
       table.style.display = 'table';
       empty.style.display = 'none';
       const areaShort = { 'บางแค':'บางแค', 'บางบัวทอง':'บางบัวทอง', 'พระประแดง':'พระประแดง' };
+
+      // --- render cards (mobile) ---
+      cardContainer.innerHTML = filtered.map((r, i) => `
+        <div class="record-card">
+          <div class="card-header">
+            <div>
+              <div class="card-name">${esc(r.name)}</div>
+              <div class="card-empid">รหัส: ${esc(r.empId)}${isOverview ? ` · ${esc(areaShort[r.area]||r.area)}` : ''}</div>
+            </div>
+            ${r._row >= 2 ? `
+            <button class="card-menu-btn" onclick="toggleMenu(${r._row}, event)">⋮</button>
+            <div class="action-menu" id="menu_${r._row}">
+              <button onclick="editRecord(${r._row})">✏️ แก้ไข</button>
+              <button class="delete" onclick="deleteRecord(${r._row})">🗑️ ลบ</button>
+            </div>` : ''}
+          </div>
+          <div class="card-grid">
+            <div class="card-field"><label>สถานี</label><span>${esc(r.site)||'—'}</span></div>
+            <div class="card-field"><label>ฝ่าย</label><span>${esc(r.dept)||'—'}</span></div>
+            <div class="card-field"><label>กอง</label><span>${esc(r.div)||'—'}</span></div>
+            <div class="card-field"><label>เบอร์</label><span>${esc(r.tel)||'—'}</span></div>
+          </div>
+          <div class="card-dates">
+            📅 ${thDate(r.dateFrom)}${r.dateFrom !== r.dateTo ? ` → ${thDate(r.dateTo)}` : ''}
+          </div>
+        </div>`).join('');
+
+      // --- render table rows (desktop) ---
       tbody.innerHTML = filtered.map((r, i) => `
         <tr>
           ${!isOverview ? `
