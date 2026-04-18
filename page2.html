@@ -1200,26 +1200,26 @@
   function toggleMenu(rowNum, event, btnEl) {
     event.stopPropagation();
     event.preventDefault();
-    showToast('tap ' + rowNum);
-    const target = document.getElementById('menu_' + rowNum);
-    const wasOpen = target && target.classList.contains('show');
-    document.querySelectorAll('.action-menu').forEach(m => m.classList.remove('show'));
-    if (!wasOpen && target) {
-      // desktop: คำนวณพิกัด fixed; mobile: CSS absolute จัดการเอง
-      if (window.innerWidth > 640) {
-        const btn = btnEl || event.currentTarget;
-        const rect = btn.getBoundingClientRect();
-        const menuWidth = 140;
-        target.style.top = (rect.bottom + 4) + 'px';
-        if (rect.left + menuWidth > window.innerWidth - 8) {
-          target.style.left = '';
-          target.style.right = (window.innerWidth - rect.right) + 'px';
-        } else {
-          target.style.right = '';
-          target.style.left = rect.left + 'px';
-        }
+    const fm = document.getElementById('floatingMenu');
+    const wasOpen = fm.classList.contains('show') && fm.dataset.row == rowNum;
+    fm.classList.remove('show');
+    if (!wasOpen) {
+      fm.dataset.row = rowNum;
+      fm.innerHTML = `
+        <button onclick="editRecord(${rowNum})">✏️ แก้ไข</button>
+        <button class="delete" onclick="deleteRecord(${rowNum})">🗑️ ลบ</button>`;
+      const btn = btnEl || event.currentTarget;
+      const rect = btn.getBoundingClientRect();
+      const menuWidth = 140;
+      fm.style.top = (rect.bottom + 4) + 'px';
+      if (rect.left + menuWidth > window.innerWidth - 8) {
+        fm.style.left = '';
+        fm.style.right = (window.innerWidth - rect.right) + 'px';
+      } else {
+        fm.style.right = '';
+        fm.style.left = rect.left + 'px';
       }
-      target.classList.add('show');
+      fm.classList.add('show');
       _menuOpenTime = Date.now();
     }
   }
@@ -1262,10 +1262,6 @@
   }
 
   /* ปิด menu เมื่อคลิกที่อื่น */
-  document.addEventListener('click', () => {
-    if (Date.now() - _menuOpenTime < 300) return;
-    document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
-  });
 
   /* ===== Form ===== */
   function openForm() {
@@ -1349,6 +1345,18 @@
     const to = document.getElementById('fDateTo');
     if (to.value && to.value < this.value) to.value = this.value;
     to.min = this.value;
+  });
+  // floating menu ที่ body level — ใช้ร่วมกันทุก card/row
+  const _floatMenu = document.createElement('div');
+  _floatMenu.className = 'action-menu';
+  _floatMenu.id = 'floatingMenu';
+  _floatMenu.style.position = 'fixed';
+  _floatMenu.style.zIndex = '9999';
+  document.body.appendChild(_floatMenu);
+
+  document.addEventListener('click', () => {
+    if (Date.now() - _menuOpenTime < 300) return;
+    document.getElementById('floatingMenu').classList.remove('show');
   });
 </script>
 </body>
