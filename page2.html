@@ -1138,7 +1138,7 @@
               <div class="card-empid">รหัส: ${esc(r.empId)}${isOverview ? ` · ${esc(areaShort[r.area]||r.area)}` : ''}</div>
             </div>
             ${r._row >= 2 ? `
-            <button class="card-menu-btn" onclick="toggleMenu(${r._row}, event)">⋮</button>
+            <button class="card-menu-btn" onclick="toggleMenu(${r._row}, event, this)">⋮</button>
             <div class="action-menu" id="menu_${r._row}">
               <button onclick="editRecord(${r._row})">✏️ แก้ไข</button>
               <button class="delete" onclick="deleteRecord(${r._row})">🗑️ ลบ</button>
@@ -1161,7 +1161,7 @@
           ${!isOverview ? `
           <td class="actions-cell">
             ${r._row >= 2 ? `
-            <button class="btn-menu" onclick="toggleMenu(${r._row}, event)" title="เมนู">⋮</button>
+            <button class="btn-menu" onclick="toggleMenu(${r._row}, event, this)" title="เมนู">⋮</button>
             <div class="action-menu" id="menu_${r._row}">
               <button onclick="editRecord(${r._row})">✏️ แก้ไข</button>
               <button class="delete" onclick="deleteRecord(${r._row})">🗑️ ลบ</button>
@@ -1190,7 +1190,7 @@
 
   let _menuOpenTime = 0;
 
-  function toggleMenu(rowNum, event) {
+  function toggleMenu(rowNum, event, btnEl) {
     event.stopPropagation();
     event.preventDefault();
     const menus = document.querySelectorAll('.action-menu');
@@ -1198,7 +1198,7 @@
     const wasOpen = target && target.classList.contains('show');
     menus.forEach(m => m.classList.remove('show'));
     if (!wasOpen && target) {
-      const btn = event.currentTarget || event.target.closest('button');
+      const btn = btnEl || event.currentTarget;
       const rect = btn.getBoundingClientRect();
       const menuWidth = 140;
       target.style.top = (rect.bottom + 4) + 'px';
