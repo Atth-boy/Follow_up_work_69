@@ -271,6 +271,7 @@
 <script>
   const SHEET_ID = '12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk';
   const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+  let INDEX_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxANk5JXQ_EPAqEw-a28DOzHyYCmWpKnHkXVBqx5etQKBs4ha_U_2ju3CHvvltwMEBt/exec';
 
   /* ข้อมูล fallback จาก Excel (ใช้เมื่อ Sheets ยังไม่ public) */
   const FALLBACK = [
@@ -337,7 +338,8 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       const rows = parseCSV(text).slice(1); // skip header
-      tableData = rows.map(r => ({
+      tableData = rows.map((r, i) => ({
+        _row:  i + 2,
         no:    r[0] || '',
         item:  r[1] || '',
         plan:  r[2] || '',
@@ -420,20 +422,35 @@
     editingRow = null;
   }
 
-  function saveRow() {
+  async function saveRow() {
     if (editingRow === null) return;
     const now = new Date();
     const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()+543}`;
 
-    tableData[editingRow].plan = document.getElementById('inputPlan').value;
-    tableData[editingRow].step = document.getElementById('inputStep').value;
+    const newPlan = document.getElementById('inputPlan').value;
+    const newStep = document.getElementById('inputStep').value;
+    const sheetRow = tableData[editingRow]._row;
+
+    tableData[editingRow].plan = newPlan;
+    tableData[editingRow].step = newStep;
     tableData[editingRow].date = dateStr;
 
     filterTable();
     closeModal();
     showToast('บันทึกข้อมูลเรียบร้อย — ' + dateStr);
 
-    /* TODO: เขียนกลับ Google Sheets ด้วย Sheets API / Apps Script */
+    if (!INDEX_SCRIPT_URL) return;
+    try {
+      const url = `${INDEX_SCRIPT_URL}?action=update&row=${sheetRow}`
+        + `&plan=${encodeURIComponent(newPlan)}`
+        + `&step=${encodeURIComponent(newStep)}`
+        + `&date=${encodeURIComponent(dateStr)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status !== 'ok') showToast('⚠️ บันทึกใน Sheets ไม่สำเร็จ: ' + (json.msg || ''));
+    } catch (err) {
+      showToast('⚠️ เชื่อมต่อ Apps Script ไม่ได้');
+    }
   }
 
   /* ---------- Toast ---------- */
