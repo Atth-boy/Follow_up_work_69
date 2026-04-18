@@ -1,113 +1,186 @@
 // ============================================================
 //  Apps Script สำหรับ page2.html — บันทึกผู้เข้าสถานีไฟฟ้า
-//  วิธีติดตั้ง: ดูขั้นตอนท้ายไฟล์นี้
+//  Sheet ID: ดูใน page2.html บรรทัด SHEET_ID
 // ============================================================
 
-const SHEET_NAME = 'บันทึก';  // ชื่อ Sheet tab (เปลี่ยนได้)
+const SHEET_NAME = 'บันทึก';
 
 const HEADERS = [
   'timestamp', 'area', 'name', 'empId',
-  'site', 'dept', 'div', 'tel', 'dateFrom', 'dateTo'
+  'site', 'dept', 'div', 'tel',
+  'dateFrom', 'dateTo', 'timeFrom', 'timeTo', 'workDetail'
 ];
 
-// ---------- รับข้อมูลจากเว็บ (POST) ----------
-function doPost(e) {
+// col index (1-based) ตาม HEADERS
+const COL = {
+  timestamp:1, area:2, name:3, empId:4,
+  site:5, dept:6, div:7, tel:8,
+  dateFrom:9, dateTo:10, timeFrom:11, timeTo:12, workDetail:13
+};
+
+// ---------- Entry point ----------
+function doGet(e) {
+  const params = (e && e.parameter) ? e.parameter : {};
+  const action = params.action || 'read';
+
   const lock = LockService.getScriptLock();
   lock.tryLock(10000);
   try {
-    const data = JSON.parse(e.parameter.data);
     const ss    = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet   = ss.getSheetByName(SHEET_NAME);
+    const sheet = getOrCreateSheet(ss);
 
-    // สร้าง sheet ใหม่ถ้ายังไม่มี
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-    }
+    if (action === 'read')   return handleRead(sheet);
+    if (action === 'add')    return handleAdd(sheet, params);
+    if (action === 'update') return handleUpdate(sheet, params);
+    if (action === 'delete') return handleDelete(sheet, params);
 
-    // สร้าง header row ถ้า sheet ว่าง
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(HEADERS);
-      sheet.getRange(1, 1, 1, HEADERS.length)
-           .setFontWeight('bold')
-           .setBackground('#374151')
-           .setFontColor('#ffffff');
-      sheet.setFrozenRows(1);
-    }
-
-    const now = Utilities.formatDate(
-      new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss'
-    );
-
-    sheet.appendRow([
-      now,
-      data.area    || '',
-      data.name    || '',
-      data.empId   || '',
-      data.site    || '',
-      data.dept    || '',
-      data.div     || '',
-      data.tel     || '',
-      data.dateFrom|| '',
-      data.dateTo  || '',
-    ]);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok' }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', msg: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-
+    return jsonOk({ status: 'error', msg: 'unknown action: ' + action });
+  } catch(err) {
+    return jsonOk({ status: 'error', msg: err.toString() });
   } finally {
     lock.releaseLock();
   }
 }
 
-// ---------- ทดสอบ script (รันใน Apps Script Editor) ----------
-function testWrite() {
+// ---------- สร้าง / เช็ค Sheet ----------
+function getOrCreateSheet(ss) {
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(HEADERS);
+    sheet.getRange(1, 1, 1, HEADERS.length)
+         .setFontWeight('bold')
+         .setBackground('#374151')
+         .setFontColor('#ffffff');
+    sheet.setFrozenRows(1);
+    return sheet;
+  }
+
+  // เช็คว่า header มีครบไหม — ถ้าขาดให้เพิ่มอัตโนมัติ
+  const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  HEADERS.forEach((h, i) => {
+    if (!existingHeaders.includes(h)) {
+      const newCol = sheet.getLastColumn() + 1;
+      sheet.getRange(1, newCol).setValue(h)
+           .setFontWeight('bold')
+           .setBackground('#374151')
+           .setFontColor('#ffffff');
+    }
+  });
+  return sheet;
+}
+
+// ---------- Read: คืน records ทั้งหมด ----------
+function handleRead(sheet) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return jsonOk([]);
+  const headers = data[0];
+  const rows = data.slice(1).map((r, i) => {
+    const obj = { _row: i + 2 };
+    headers.forEach((h, j) => { if (h) obj[h] = r[j] || ''; });
+    return obj;
+  });
+  return jsonOk(rows);
+}
+
+// ---------- Add: เพิ่ม record ใหม่ ----------
+function handleAdd(sheet, params) {
+  const data = JSON.parse(params.data || '{}');
+  const now  = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss');
+  sheet.appendRow([
+    now,
+    data.area       || '',
+    data.name       || '',
+    data.empId      || '',
+    data.site       || '',
+    data.dept       || '',
+    data.div        || '',
+    data.tel        || '',
+    data.dateFrom   || '',
+    data.dateTo     || '',
+    data.timeFrom   || '',
+    data.timeTo     || '',
+    data.workDetail || '',
+  ]);
+  return jsonOk({ status: 'ok' });
+}
+
+// ---------- Update: แก้ไขแถวที่ระบุ ----------
+function handleUpdate(sheet, params) {
+  const row = parseInt(params.row);
+  if (!row || row < 2) return jsonOk({ status: 'error', msg: 'invalid row' });
+  const data = JSON.parse(params.data || '{}');
+
+  const updatableFields = [
+    'area','name','empId','site','dept','div','tel',
+    'dateFrom','dateTo','timeFrom','timeTo','workDetail'
+  ];
+  updatableFields.forEach(key => {
+    if (data[key] !== undefined) {
+      sheet.getRange(row, COL[key]).setValue(data[key]);
+    }
+  });
+  return jsonOk({ status: 'ok' });
+}
+
+// ---------- Delete: ลบแถวที่ระบุ ----------
+function handleDelete(sheet, params) {
+  const row = parseInt(params.row);
+  if (!row || row < 2) return jsonOk({ status: 'error', msg: 'invalid row' });
+  sheet.deleteRow(row);
+  return jsonOk({ status: 'ok' });
+}
+
+// ---------- Helper ----------
+function jsonOk(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ---------- ทดสอบ (รันใน Apps Script Editor) ----------
+function testRead() {
+  Logger.log(doGet({ parameter: { action: 'read' } }).getContent());
+}
+
+function testAdd() {
   const mock = {
     parameter: {
+      action: 'add',
       data: JSON.stringify({
         area: 'บางแค', name: 'ทดสอบ ระบบ', empId: '9999999',
-        site: 'สถานีไฟฟ้าบางแค', dept: 'ฝทดสอบ', div: 'กทดสอบ',
-        tel: '099-999-9999', dateFrom: '2026-04-18', dateTo: '2026-04-18'
+        site: 'สถานีย่อยบางแค', dept: 'ฝทดสอบ', div: 'กทดสอบ',
+        tel: '099-999-9999', dateFrom: '2026-04-18', dateTo: '2026-04-18',
+        timeFrom: '08:00', timeTo: '17:00', workDetail: 'ทดสอบระบบ\nบรรทัดที่สอง'
       })
     }
   };
-  const result = doPost(mock);
-  Logger.log(result.getContent());
+  Logger.log(doGet(mock).getContent());
 }
 
 // ============================================================
-//  ขั้นตอนติดตั้ง
+//  ขั้นตอนติดตั้ง / อัปเดต
 // ============================================================
 //
-//  1. เปิด Google Sheet ที่ link ให้ไว้
-//
-//  2. เมนู Extensions > Apps Script
-//
-//  3. ลบ code เดิมออกทั้งหมด แล้ววาง code นี้ลงไป
-//     (เอาเฉพาะส่วน code ด้านบน ไม่ต้องเอา comment ขั้นตอนนี้)
-//
-//  4. กด Save (Ctrl+S)
-//
-//  5. รัน testWrite() ก่อน 1 ครั้งเพื่อ authorize
-//     (กด Run > ขออนุญาต Google Account)
-//
-//  6. Deploy > New deployment
+//  === กรณีติดตั้งใหม่ ===
+//  1. เปิด Google Sheet แล้วไปที่ Extensions > Apps Script
+//  2. ลบ code เดิมออก แล้ววาง code นี้ทั้งหมด (ยกเว้น comment นี้)
+//  3. Save (Ctrl+S)
+//  4. รัน testAdd() เพื่อ authorize และทดสอบ
+//  5. Deploy > New deployment
 //     - Type: Web app
 //     - Execute as: Me
 //     - Who has access: Anyone
-//     - กด Deploy > Copy the Web App URL
-//
-//  7. เปิด page2.html หาบรรทัด:
-//       let SCRIPT_URL = '';
-//     เปลี่ยนเป็น:
+//  6. Copy URL แล้วใส่ใน page2.html บรรทัด:
 //       let SCRIPT_URL = 'https://script.google.com/macros/s/xxx.../exec';
 //
-//  8. อย่าลืมแชร์ Google Sheet เป็น "Anyone with link can view"
-//     เพื่อให้เว็บอ่านข้อมูลผ่าน CSV URL ได้
+//  === กรณีอัปเดต Script ที่ deploy ไปแล้ว ===
+//  1. วาง code ใหม่ > Save
+//  2. Deploy > Manage deployments > Edit (ดินสอ) > Version: New version > Deploy
+//  3. *** ไม่ต้องเปลี่ยน URL ใน page2.html ***
+//
+//  === อัปเดต Google Sheet (เพิ่มคอลัมน์ใหม่) ===
+//  Script จะเพิ่ม header คอลัมน์ให้อัตโนมัติเมื่อรันครั้งแรก
+//  หรือเพิ่มเองที่ sheet "บันทึก" คอลัมน์ K=timeFrom, L=timeTo, M=workDetail
 //
 // ============================================================
