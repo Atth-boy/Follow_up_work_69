@@ -1200,6 +1200,7 @@
   function toggleMenu(rowNum, event, btnEl) {
     event.stopPropagation();
     event.preventDefault();
+    showToast('tap ' + rowNum);
     const target = document.getElementById('menu_' + rowNum);
     const wasOpen = target && target.classList.contains('show');
     document.querySelectorAll('.action-menu').forEach(m => m.classList.remove('show'));
