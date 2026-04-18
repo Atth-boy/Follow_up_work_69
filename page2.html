@@ -1341,7 +1341,10 @@
 
     if (SCRIPT_URL) {
       try {
-        await fetch(`${SCRIPT_URL}?action=delete&row=${rowNum}`);
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: new URLSearchParams({ action: 'delete', row: rowNum })
+        });
         showToast('ลบรายการเรียบร้อย ✓');
         setTimeout(loadRecords, 1500);
       } catch(e) {
@@ -1407,13 +1410,15 @@
     closeForm();
     render();
 
-    // บันทึกลง Google Sheets
+    // บันทึกลง Google Sheets (POST เพื่อป้องกัน cache)
     if (SCRIPT_URL) {
-      const params = new URLSearchParams();
       const action = isEdit ? 'update' : 'add';
-      const dataParam = encodeURIComponent(JSON.stringify(isEdit ? { row: savedRow, ...record } : record));
-      const rowParam  = isEdit ? `&row=${savedRow}` : '';
-      fetch(`${SCRIPT_URL}?action=${action}${rowParam}&data=${dataParam}`)
+      const body   = new URLSearchParams({
+        action,
+        data: JSON.stringify(isEdit ? { row: savedRow, ...record } : record),
+        ...(isEdit ? { row: savedRow } : {})
+      });
+      fetch(SCRIPT_URL, { method: 'POST', body })
         .catch(() => showToast('บันทึกใน Sheets ไม่สำเร็จ', 'error'));
       showToast(isEdit ? 'แก้ไขข้อมูลเรียบร้อย ✓' : 'บันทึกข้อมูลเรียบร้อยแล้ว ✓');
     } else {

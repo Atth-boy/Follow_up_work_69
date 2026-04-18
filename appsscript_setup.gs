@@ -18,10 +18,25 @@ const COL = {
   dateFrom:9, dateTo:10, timeFrom:11, timeTo:12, workDetail:13
 };
 
-// ---------- Entry point ----------
+// ---------- doGet: อ่านข้อมูลอย่างเดียว ----------
 function doGet(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    const ss    = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = getOrCreateSheet(ss);
+    return handleRead(sheet);
+  } catch(err) {
+    return jsonOk({ status: 'error', msg: err.toString() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ---------- doPost: เขียนข้อมูล (add / update / delete) ----------
+function doPost(e) {
   const params = (e && e.parameter) ? e.parameter : {};
-  const action = params.action || 'read';
+  const action = params.action || '';
 
   const lock = LockService.getScriptLock();
   lock.tryLock(10000);
@@ -29,7 +44,6 @@ function doGet(e) {
     const ss    = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = getOrCreateSheet(ss);
 
-    if (action === 'read')   return handleRead(sheet);
     if (action === 'add')    return handleAdd(sheet, params);
     if (action === 'update') return handleUpdate(sheet, params);
     if (action === 'delete') return handleDelete(sheet, params);
@@ -140,7 +154,7 @@ function jsonOk(obj) {
 
 // ---------- ทดสอบ (รันใน Apps Script Editor) ----------
 function testRead() {
-  Logger.log(doGet({ parameter: { action: 'read' } }).getContent());
+  Logger.log(doGet({ parameter: {} }).getContent());
 }
 
 function testAdd() {
@@ -155,7 +169,7 @@ function testAdd() {
       })
     }
   };
-  Logger.log(doGet(mock).getContent());
+  Logger.log(doPost(mock).getContent());
 }
 
 // ============================================================
@@ -178,6 +192,9 @@ function testAdd() {
 //  1. วาง code ใหม่ > Save
 //  2. Deploy > Manage deployments > Edit (ดินสอ) > Version: New version > Deploy
 //  3. *** ไม่ต้องเปลี่ยน URL ใน page2.html ***
+//
+//  หมายเหตุ: doGet = อ่านข้อมูลเท่านั้น (ไม่ cache ปัญหา)
+//            doPost = เขียนข้อมูล add/update/delete
 //
 //  === อัปเดต Google Sheet (เพิ่มคอลัมน์ใหม่) ===
 //  Script จะเพิ่ม header คอลัมน์ให้อัตโนมัติเมื่อรันครั้งแรก
