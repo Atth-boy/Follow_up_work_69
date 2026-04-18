@@ -342,6 +342,7 @@
       const rows = parseCSV(text).slice(1); // skip header
       tableData = rows.map((r, i) => ({
         _row:  i + 2,
+        _idx:  i,
         no:    r[0] || '',
         item:  r[1] || '',
         plan:  r[2] || '',
@@ -350,7 +351,8 @@
         owner: r[5] || '',
       }));
     } catch {
-      tableData = FALLBACK.map(r => ({
+      tableData = FALLBACK.map((r, i) => ({
+        _idx: i,
         no: r[0], item: r[1], plan: r[2], step: r[3], date: r[4], owner: r[5]
       }));
     }
@@ -389,7 +391,7 @@
         <td class="col-step">${r.step ? esc(r.step) : '<span class="empty-cell">—</span>'}</td>
         <td class="col-date">${r.date || ''}</td>
         <td class="col-owner">${esc(r.owner)}</td>
-        <td><button class="btn-update" onclick="openModal(${idx})">แก้ไข</button></td>
+        <td><button class="btn-update" onclick="openModal(${r._idx})">แก้ไข</button></td>
       </tr>`).join('');
   }
 
