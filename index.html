@@ -35,6 +35,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
     .toolbar input {
       padding: 7px 14px;
@@ -58,6 +59,64 @@
       margin-right: 4px;
       vertical-align: middle;
     }
+
+    /* Filter buttons */
+    .filter-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1px solid #cbd5e0;
+      background: white;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      color: #4b5563;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: #94a3b8; background: #f8fafc; }
+    .filter-btn.f-ongoing  { color: #854d0e; border-color: #fde68a; }
+    .filter-btn.f-done     { color: #166534; border-color: #bbf7d0; }
+    .filter-btn.f-cancelled { color: #991b1b; border-color: #fecaca; }
+    .filter-btn.active {
+      background: #374151;
+      color: white;
+      border-color: #374151;
+    }
+    .filter-btn.active.f-ongoing  { background: #eab308; border-color: #eab308; color: white; }
+    .filter-btn.active.f-done     { background: #16a34a; border-color: #16a34a; color: white; }
+    .filter-btn.active.f-cancelled { background: #ef4444; border-color: #ef4444; color: white; }
+
+    /* Status dot badge */
+    .status-dot-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .status-dot-wrap.ongoing  { color: #854d0e; }
+    .status-dot-wrap.done     { color: #166534; }
+    .status-dot-wrap.cancelled { color: #991b1b; }
+    .status-dot.ongoing   { background: #eab308; box-shadow: 0 0 0 3px #fef9c3; }
+    .status-dot.done      { background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; }
+    .status-dot.cancelled { background: #ef4444; box-shadow: 0 0 0 3px #fee2e2; }
+
+    /* Row left stripe by status */
+    tbody tr[data-status="ongoing"]   { box-shadow: inset 4px 0 0 #eab308; }
+    tbody tr[data-status="done"]      { box-shadow: inset 4px 0 0 #22c55e; }
+    tbody tr[data-status="cancelled"] { box-shadow: inset 4px 0 0 #ef4444; }
 
     .table-wrap {
       padding: 20px 32px;
@@ -98,6 +157,7 @@
     .col-step    { min-width: 220px; max-width: 280px; white-space: pre-line; color: #374151; }
     .col-date    { white-space: nowrap; color: #64748b; font-size: 12px; min-width: 90px; }
     .col-owner   { white-space: nowrap; color: #4b5563; font-size: 13px; min-width: 100px; }
+    .col-status  { white-space: nowrap; min-width: 110px; text-align: center; }
 
     .empty-cell { color: #cbd5e0; font-style: italic; font-size: 12px; }
 
@@ -153,10 +213,45 @@
 
     .modal .modal-footer {
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
       margin-top: 22px;
     }
+    .modal-footer-right {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Segmented status selector in modal footer */
+    .seg-group {
+      display: flex;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #cbd5e0;
+      flex: 1;
+      max-width: 320px;
+    }
+    .seg-btn {
+      flex: 1;
+      padding: 7px 4px;
+      border: none;
+      background: #f8fafc;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.15s;
+      border-right: 1px solid #cbd5e0;
+      white-space: nowrap;
+    }
+    .seg-btn:last-child { border-right: none; }
+    .seg-btn:hover { background: #f1f5f9; color: #374151; }
+    .seg-btn.active-ongoing   { background: #eab308; color: white; }
+    .seg-btn.active-done      { background: #16a34a; color: white; }
+    .seg-btn.active-cancelled { background: #ef4444; color: white; }
+
     .btn-cancel {
       padding: 8px 20px;
       border: 1px solid #cbd5e0;
@@ -237,6 +332,8 @@
         padding: 9px 14px;
       }
       .toolbar .status-badge { margin-left: 0; }
+      .filter-btns { width: 100%; }
+      .filter-btn { font-size: 11px; padding: 5px 10px; }
 
       .table-wrap {
         padding: 12px 12px;
@@ -255,6 +352,10 @@
         box-shadow: 0 1px 6px rgba(0,0,0,0.08);
         border-left: 4px solid #f97316;
       }
+      .card.status-ongoing   { border-left-color: #eab308; }
+      .card.status-done      { border-left-color: #22c55e; }
+      .card.status-cancelled { border-left-color: #ef4444; }
+
       .card-header {
         display: flex;
         align-items: flex-start;
@@ -286,6 +387,7 @@
         margin-bottom: 10px;
         font-size: 12px;
         padding-left: 2px;
+        align-items: center;
       }
       .card-owner { color: #4b5563; font-weight: 500; }
       .card-date  { color: #94a3b8; }
@@ -337,6 +439,8 @@
       .modal textarea { font-size: 15px; min-height: 80px; }
       .btn-cancel, .btn-save { min-height: 44px; font-size: 15px; }
       .btn-save { flex: 1; }
+      .modal .modal-footer { flex-wrap: wrap; gap: 8px; }
+      .status-select { font-size: 13px; padding: 8px 10px; }
 
       .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; }
     }
@@ -355,6 +459,12 @@
 
 <div class="toolbar">
   <input type="text" id="searchInput" placeholder="🔍  ค้นหารายการงาน..." oninput="filterTable()" />
+  <div class="filter-btns">
+    <button class="filter-btn active" id="fbAll"       onclick="setStatusFilter('')">ทั้งหมด</button>
+    <button class="filter-btn f-ongoing" id="fbOngoing" onclick="setStatusFilter('ongoing')">● กำลังดำเนินการ</button>
+    <button class="filter-btn f-done"    id="fbDone"    onclick="setStatusFilter('done')">● สำเร็จ</button>
+    <button class="filter-btn f-cancelled" id="fbCancelled" onclick="setStatusFilter('cancelled')">● ยกเลิก</button>
+  </div>
   <div class="status-badge"><span></span>เชื่อมต่อ database</div>
 </div>
 
@@ -371,6 +481,7 @@
         <th>ขั้นตอนปัจจุบัน</th>
         <th>อัพเดทเมื่อ</th>
         <th>ผู้รับผิดชอบ</th>
+        <th>สถานะ</th>
         <th>แก้ไข</th>
       </tr>
     </thead>
@@ -381,7 +492,7 @@
 
 <!-- Modal -->
 <div class="overlay" id="overlay">
-  <div class="modal">
+  <div class="modal" id="modalBox">
     <h2>แก้ไขรายการงาน</h2>
     <div class="modal-item" id="modalItemName"></div>
     <div class="field-group">
@@ -393,8 +504,15 @@
       <textarea id="inputStep" rows="4"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button class="btn-save" onclick="saveRow()">บันทึก</button>
+      <div class="seg-group">
+        <button class="seg-btn" id="segOngoing"   onclick="selectStatus('ongoing')">กำลังดำเนินการ</button>
+        <button class="seg-btn" id="segDone"      onclick="selectStatus('done')">สำเร็จ</button>
+        <button class="seg-btn" id="segCancelled" onclick="selectStatus('cancelled')">ยกเลิก</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-save" onclick="saveRow()">บันทึก</button>
+      </div>
     </div>
   </div>
 </div>
@@ -406,63 +524,66 @@
   const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
   let INDEX_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxANk5JXQ_EPAqEw-a28DOzHyYCmWpKnHkXVBqx5etQKBs4ha_U_2ju3CHvvltwMEBt/exec';
 
-  /* ข้อมูล fallback จาก Excel (ใช้เมื่อ Sheets ยังไม่ public) */
   const FALLBACK = [
-    [1,"Access Control เพิ่มเติมของสถานีไฟฟ้าที่เหลือ","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (240 วัน)\n- เดือน ส.ค. ปี 71 ตรวจรับ (30 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7"],
-    [2,"CSR ชุมชนบริเวณโดยรอบสถานีไฟฟ้า","","","","ชอสฟ.(ธ) / วศฟ.6"],
-    [3,"ICT สถานีไฟฟ้า","","","","ชผสฟ.2 (ไกรวิชญ์)"],
-    [4,"Inplant training","","","","สฟ.1"],
-    [5,"MN คู่มือการปฏิบัติงานภายในสถานีไฟฟ้า","","","","วศฟ.7"],
-    [6,"Walkie talkie","- เดือน มี.ค. ปี 69 ฝคฐ. ส่งวิทยุ walkie talkie ให้ กสฟ."," - ฝคฐ. จัดหาวิทยุ Walkie talkie เรียบร้อยแล้ว\n- อยู่ระหว่างขออนุญาตใช้งานจาก กสทช.","","วศฟ.7"],
-    [7,"เครื่องตัดกิ่งไม้ เครื่องละ 7,000 บาท จำนวน 3 เครื่อง","","","","ประพันธ์"],
-    [8,"เครื่องวัดความเป็นฉนวน Mega Ohm meter จำนวน 2 เครื่อง","","","","ศุภโรจน์"],
-    [9,"เงินรองจ่าย (ติดตามการใช้งานระบบเงินรองจ่าย)","","","","ชทฟ.7 (ประพันธ์)"],
-    [10,"โครงการ Thermal Camera","","","","ชผสฟ.2 (ไกรวิชญ์)"],
-    [11,"การจัดหา Sim Card / ยกเลิก Wifi","- เดือน ก.พ. ปี 69 จัดทำบันทึกขออนุมัติใช้ SIM Card\n- เดือน มี.ค. ปี 69 ได้รับอนุมัติ\n- เดือน เม.ย. ปี 69 ฝคฐ. จัดหา SIM Card","อยู่ระหว่างจัดทำบันทึกขออนุมัติใช้ SIM Card","","วศฟ.7"],
-    [12,"ค่าทดสอบเครื่องมือวัดแสงประจำปี","","","","ปรีชา"],
-    [13,"ค่าทดสอบเครื่องวัดปริมาณแอลกอฮอล์ประจำปี","","","","ภาสกร"],
-    [14,"ค่าทดสอบถุงมือยาง","","","","ปรีชา"],
-    [15,"ค่าหมึก Printer แบบ Laser","","","","มธ. / กสฟ."],
-    [16,"งานจ้างช่างไฟฟ้าประจำศูนย์ฯ Unmanned substation","","","","สฟ.2"],
-    [17,"งานจ้างช่างไฟฟ้าประจำสถานีต้นทาง","","","","สฟ.2"],
-    [18,"งานจ้างช่างไฟฟ้าประจำสถานีย่อย","","","","สฟ.2"],
-    [19,"งานจ้างทำความสะอาดหลังคา","","","","ภาสกร"],
-    [20,"งานจ้างพนักงานประจำศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","","","","สฟ.3"],
-    [21,"จัดซื้อ Intercom ของศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7"],
-    [22,"จัดซื้อแบตเตอร์รี่ Emergency light จำนวน 285 ตัว","","","","ศุภโรจน์"],
-    [23,"จัดซื้อสถานะประตูรั้วสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7"],
-    [24,"จัดทำ Dashboard งบประมาณ ฝคฟ.","","","","วศฟ.6"],
-    [25,"จัดทำรายการติดตามงาน กสฟ.","","","","วศฟ.6"],
-    [26,"จัดหา Notebook ที่มี Auto CAD","","","","แผนก จซ."],
-    [27,"จ้างเจ้าหน้าที่รักษาความปลอดภัย (อผศ.)","","","","ประพันธ์"],
-    [28,"จ้างช่างซ่อมบำรุงอาคารสถานีไฟฟ้า (จซ.)","","","","จซ."],
-    [29,"จ้างซ่อมบำรุงอุปกรณ์ Guard tour","","","","ชทฟ.7 / 3 แผนก"],
-    [30,"จ้างทำความสะอาด ศูนย์รักษาความปลอดภัย พระประแดง","","","","ภาสกร"],
-    [31,"จ้างทำความสะอาดสถานีไฟฟ้าและสวิตช์ชิ่ง 172 สถานี","","","","สฟ.1"],
-    [32,"จ้างทำความสะอาดสถานีย่อยวัดเลียบและอาคารสำนักงาน กสฟ.","","","","ภาสกร"],
-    [33,"ซ้อมแผนการป้องกันฯ (เหตุอุทกภัย)","","","","สฟ.1"],
-    [34,"ซ้อมแผนการป้องกันฯ (การก่อวินาศกรรม)","","","","สฟ.1"],
-    [35,"ซ่อมบำรุงรักษาประตูม้วนที่สถานีไฟฟ้า (5 สถานี)","","","","วันชนะ"],
-    [36,"ติดตามกล้องวงจรปิด ระยะที่ 4","- บรรจุลงในแผน ICT ปี 71\n- เริ่มดำเนินการปี 72","","","วศฟ.7"],
-    [37,"ติดตามงาน 3S (ทำบันทึกสรุป/แนบรายงานประชุม)","","ดำเนินการจัดรายงานสรุปการประชุมฯ ครั้งที่ 1/2569 เรียบร้อยแล้ว","","คณะทำงาน / วศฟ.7"],
-    [38,"ติดตามระบบป้องปรามผู้บุกรุก","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (300 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7"],
-    [39,"ถุงมือยาง 30 kV จำนวน 5 คู่ พร้อมค่าทดสอบ","","","","ประพันธ์"],
-    [40,"น้ำดื่ม เดือนละ 400 ถัง ราคาถังละ 50 บาท","","","","ประพันธ์"],
-    [41,"ประกันภัยสำหรับสถานีย่อยวชิรพยาบาล","","","","ชทฟ.7 (ปรีชา)"],
-    [42,"ปรับปรุงคอกหม้อแปลง 7 สถานี","","","","วศฟ.6"],
-    [43,"ปรับปรุงภูมิทัศน์ปทุมวัน","","","","คณะทำงาน / หผสฟ.1"],
-    [44,"ป้องกันและกำจัดปลวกด้วยระบบเหยื่อ สต.ชิดลม และแจ้งวัฒนะ","","","","ภาสกร"],
-    [45,"ป้องกันและกำจัดปลวกสถานีไฟฟ้า (169 สถานี)","","","","ภาสกร"],
-    [46,"ปั๊มน้ำอัตโนมัติ แบบแรงดันคงที่ จำนวน 5 เครื่อง","","","","ศุภโรจน์"],
-    [47,"ป้ายประดับ/ธงประดับ/ธงชาติ","","","","มธ. / กสฟ."],
-    [48,"ผ้ารองในหมวก (หมวกหนอน)","","","","ประพันธ์"],
-    [49,"พิมพ์เอกสารต่างๆ สำหรับสถานีไฟฟ้า","","","","ปรีชา"],
-    [50,"รายงานผลการจัดซื้อจัดจ้าง (ต่ำกว่า 100,000 บาท) รายไตรมาส","","","","มธ."],
-    [51,"อุปกรณ์ประกอบคอมพิวเตอร์ (เม้า, คีบอร์ด, flashdrive)","","","","ชทฟ.7 / 4 แผนก"],
+    [1,"Access Control เพิ่มเติมของสถานีไฟฟ้าที่เหลือ","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (240 วัน)\n- เดือน ส.ค. ปี 71 ตรวจรับ (30 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7","ongoing"],
+    [2,"CSR ชุมชนบริเวณโดยรอบสถานีไฟฟ้า","","","","ชอสฟ.(ธ) / วศฟ.6","ongoing"],
+    [3,"ICT สถานีไฟฟ้า","","","","ชผสฟ.2 (ไกรวิชญ์)","ongoing"],
+    [4,"Inplant training","","","","สฟ.1","ongoing"],
+    [5,"MN คู่มือการปฏิบัติงานภายในสถานีไฟฟ้า","","","","วศฟ.7","ongoing"],
+    [6,"Walkie talkie","- เดือน มี.ค. ปี 69 ฝคฐ. ส่งวิทยุ walkie talkie ให้ กสฟ."," - ฝคฐ. จัดหาวิทยุ Walkie talkie เรียบร้อยแล้ว\n- อยู่ระหว่างขออนุญาตใช้งานจาก กสทช.","","วศฟ.7","ongoing"],
+    [7,"เครื่องตัดกิ่งไม้ เครื่องละ 7,000 บาท จำนวน 3 เครื่อง","","","","ประพันธ์","ongoing"],
+    [8,"เครื่องวัดความเป็นฉนวน Mega Ohm meter จำนวน 2 เครื่อง","","","","ศุภโรจน์","ongoing"],
+    [9,"เงินรองจ่าย (ติดตามการใช้งานระบบเงินรองจ่าย)","","","","ชทฟ.7 (ประพันธ์)","ongoing"],
+    [10,"โครงการ Thermal Camera","","","","ชผสฟ.2 (ไกรวิชญ์)","ongoing"],
+    [11,"การจัดหา Sim Card / ยกเลิก Wifi","- เดือน ก.พ. ปี 69 จัดทำบันทึกขออนุมัติใช้ SIM Card\n- เดือน มี.ค. ปี 69 ได้รับอนุมัติ\n- เดือน เม.ย. ปี 69 ฝคฐ. จัดหา SIM Card","อยู่ระหว่างจัดทำบันทึกขออนุมัติใช้ SIM Card","","วศฟ.7","ongoing"],
+    [12,"ค่าทดสอบเครื่องมือวัดแสงประจำปี","","","","ปรีชา","ongoing"],
+    [13,"ค่าทดสอบเครื่องวัดปริมาณแอลกอฮอล์ประจำปี","","","","ภาสกร","ongoing"],
+    [14,"ค่าทดสอบถุงมือยาง","","","","ปรีชา","ongoing"],
+    [15,"ค่าหมึก Printer แบบ Laser","","","","มธ. / กสฟ.","ongoing"],
+    [16,"งานจ้างช่างไฟฟ้าประจำศูนย์ฯ Unmanned substation","","","","สฟ.2","ongoing"],
+    [17,"งานจ้างช่างไฟฟ้าประจำสถานีต้นทาง","","","","สฟ.2","ongoing"],
+    [18,"งานจ้างช่างไฟฟ้าประจำสถานีย่อย","","","","สฟ.2","ongoing"],
+    [19,"งานจ้างทำความสะอาดหลังคา","","","","ภาสกร","ongoing"],
+    [20,"งานจ้างพนักงานประจำศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","","","","สฟ.3","ongoing"],
+    [21,"จัดซื้อ Intercom ของศูนย์รักษาความปลอดภัยสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7","ongoing"],
+    [22,"จัดซื้อแบตเตอร์รี่ Emergency light จำนวน 285 ตัว","","","","ศุภโรจน์","ongoing"],
+    [23,"จัดซื้อสถานะประตูรั้วสถานีไฟฟ้า","- เดือน มี.ค. ปี 70 เซ็นต์สัญญาผู้รับเหมา","- ฝคฐ. อยู่ระหว่างจัดทำเอกสารจัดซื้อจัดจ้าง","","วศฟ.7","ongoing"],
+    [24,"จัดทำ Dashboard งบประมาณ ฝคฟ.","","","","วศฟ.6","ongoing"],
+    [25,"จัดทำรายการติดตามงาน กสฟ.","","","","วศฟ.6","ongoing"],
+    [26,"จัดหา Notebook ที่มี Auto CAD","","","","แผนก จซ.","ongoing"],
+    [27,"จ้างเจ้าหน้าที่รักษาความปลอดภัย (อผศ.)","","","","ประพันธ์","ongoing"],
+    [28,"จ้างช่างซ่อมบำรุงอาคารสถานีไฟฟ้า (จซ.)","","","","จซ.","ongoing"],
+    [29,"จ้างซ่อมบำรุงอุปกรณ์ Guard tour","","","","ชทฟ.7 / 3 แผนก","ongoing"],
+    [30,"จ้างทำความสะอาด ศูนย์รักษาความปลอดภัย พระประแดง","","","","ภาสกร","ongoing"],
+    [31,"จ้างทำความสะอาดสถานีไฟฟ้าและสวิตช์ชิ่ง 172 สถานี","","","","สฟ.1","ongoing"],
+    [32,"จ้างทำความสะอาดสถานีย่อยวัดเลียบและอาคารสำนักงาน กสฟ.","","","","ภาสกร","ongoing"],
+    [33,"ซ้อมแผนการป้องกันฯ (เหตุอุทกภัย)","","","","สฟ.1","ongoing"],
+    [34,"ซ้อมแผนการป้องกันฯ (การก่อวินาศกรรม)","","","","สฟ.1","ongoing"],
+    [35,"ซ่อมบำรุงรักษาประตูม้วนที่สถานีไฟฟ้า (5 สถานี)","","","","วันชนะ","ongoing"],
+    [36,"ติดตามกล้องวงจรปิด ระยะที่ 4","- บรรจุลงในแผน ICT ปี 71\n- เริ่มดำเนินการปี 72","","","วศฟ.7","ongoing"],
+    [37,"ติดตามงาน 3S (ทำบันทึกสรุป/แนบรายงานประชุม)","","ดำเนินการจัดรายงานสรุปการประชุมฯ ครั้งที่ 1/2569 เรียบร้อยแล้ว","","คณะทำงาน / วศฟ.7","ongoing"],
+    [38,"ติดตามระบบป้องปรามผู้บุกรุก","- เดือน พ.ย. ปี 70 เซ็นต์สัญญาผู้รับเหมา\n- เดือน ธ.ค. ปี 70 งานติดตั้งระบบฯ (300 วัน)"," - ฝคฟ. แจ้งรายชื่อคณะกรรมการฯ ให้ ฝคฐ. ทราบ\n - ฝคฐ. บรรจุในแผนดำเนินงานปี 70","","วศฟ.7","ongoing"],
+    [39,"ถุงมือยาง 30 kV จำนวน 5 คู่ พร้อมค่าทดสอบ","","","","ประพันธ์","ongoing"],
+    [40,"น้ำดื่ม เดือนละ 400 ถัง ราคาถังละ 50 บาท","","","","ประพันธ์","ongoing"],
+    [41,"ประกันภัยสำหรับสถานีย่อยวชิรพยาบาล","","","","ชทฟ.7 (ปรีชา)","ongoing"],
+    [42,"ปรับปรุงคอกหม้อแปลง 7 สถานี","","","","วศฟ.6","ongoing"],
+    [43,"ปรับปรุงภูมิทัศน์ปทุมวัน","","","","คณะทำงาน / หผสฟ.1","ongoing"],
+    [44,"ป้องกันและกำจัดปลวกด้วยระบบเหยื่อ สต.ชิดลม และแจ้งวัฒนะ","","","","ภาสกร","ongoing"],
+    [45,"ป้องกันและกำจัดปลวกสถานีไฟฟ้า (169 สถานี)","","","","ภาสกร","ongoing"],
+    [46,"ปั๊มน้ำอัตโนมัติ แบบแรงดันคงที่ จำนวน 5 เครื่อง","","","","ศุภโรจน์","ongoing"],
+    [47,"ป้ายประดับ/ธงประดับ/ธงชาติ","","","","มธ. / กสฟ.","ongoing"],
+    [48,"ผ้ารองในหมวก (หมวกหนอน)","","","","ประพันธ์","ongoing"],
+    [49,"พิมพ์เอกสารต่างๆ สำหรับสถานีไฟฟ้า","","","","ปรีชา","ongoing"],
+    [50,"รายงานผลการจัดซื้อจัดจ้าง (ต่ำกว่า 100,000 บาท) รายไตรมาส","","","","มธ.","ongoing"],
+    [51,"อุปกรณ์ประกอบคอมพิวเตอร์ (เม้า, คีบอร์ด, flashdrive)","","","","ชทฟ.7 / 4 แผนก","ongoing"],
   ];
 
+  const STATUS_LABEL = { ongoing: 'กำลังดำเนินการ', done: 'สำเร็จ', cancelled: 'ยกเลิก' };
+
   let tableData = [];
-  let editingRow  = null;
+  let editingRow = null;
+  let currentStatusFilter = '';
+  let currentEditStatus = 'ongoing';
 
   /* ---------- Load data ---------- */
   async function loadData() {
@@ -470,24 +591,25 @@
       const res = await fetch(CSV_URL, { signal: AbortSignal.timeout(5000) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
-      const rows = parseCSV(text).slice(1); // skip header
+      const rows = parseCSV(text).slice(1);
       tableData = rows.map((r, i) => ({
-        _row:  i + 2,
-        _idx:  i,
-        no:    r[0] || '',
-        item:  r[1] || '',
-        plan:  r[2] || '',
-        step:  r[3] || '',
-        date:  r[4] || '',
-        owner: r[5] || '',
+        _row:   i + 2,
+        _idx:   i,
+        no:     r[0] || '',
+        item:   r[1] || '',
+        plan:   r[2] || '',
+        step:   r[3] || '',
+        date:   r[4] || '',
+        owner:  r[5] || '',
+        status: r[6] || 'ongoing',
       }));
     } catch {
       tableData = FALLBACK.map((r, i) => ({
         _idx: i,
-        no: r[0], item: r[1], plan: r[2], step: r[3], date: r[4], owner: r[5]
+        no: r[0], item: r[1], plan: r[2], step: r[3], date: r[4], owner: r[5], status: r[6] || 'ongoing'
       }));
     }
-    renderTable(tableData);
+    renderTable(getFiltered());
     document.getElementById('loadingDiv').style.display = 'none';
     document.getElementById('mainTable').style.display  = '';
     document.getElementById('cardList').style.display   = '';
@@ -513,16 +635,22 @@
   }
 
   /* ---------- Render ---------- */
+  function statusBadge(status) {
+    const s = status || 'ongoing';
+    return `<span class="status-dot-wrap ${s}"><span class="status-dot ${s}"></span>${STATUS_LABEL[s]}</span>`;
+  }
+
   function renderTable(data) {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = data.map((r, idx) => `
-      <tr data-idx="${idx}">
+      <tr data-idx="${idx}" data-status="${r.status || 'ongoing'}">
         <td>${r.no}</td>
         <td class="col-item">${esc(r.item)}</td>
         <td class="col-plan">${r.plan ? esc(r.plan) : '<span class="empty-cell">—</span>'}</td>
         <td class="col-step">${r.step ? esc(r.step) : '<span class="empty-cell">—</span>'}</td>
         <td class="col-date">${r.date || ''}</td>
         <td class="col-owner">${esc(r.owner)}</td>
+        <td class="col-status">${statusBadge(r.status)}</td>
         <td><button class="btn-update" onclick="openModal(${r._idx})">แก้ไข</button></td>
       </tr>`).join('');
     renderCards(data);
@@ -531,7 +659,7 @@
   function renderCards(data) {
     const list = document.getElementById('cardList');
     list.innerHTML = data.map(r => `
-      <div class="card">
+      <div class="card status-${r.status || 'ongoing'}">
         <div class="card-header">
           <span class="card-num">${r.no}</span>
           <span class="card-title">${esc(r.item)}</span>
@@ -539,6 +667,7 @@
         <div class="card-meta">
           ${r.owner ? `<span class="card-owner">👤 ${esc(r.owner)}</span>` : ''}
           ${r.date  ? `<span class="card-date">🕐 ${r.date}</span>` : ''}
+          ${statusBadge(r.status)}
         </div>
         ${r.plan ? `<div class="card-section">
           <div class="card-label">แผนการดำเนินงาน</div>
@@ -559,24 +688,48 @@
   }
 
   /* ---------- Filter ---------- */
-  function filterTable() {
+  function getFiltered() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = q ? tableData.filter(r =>
-      r.item.toLowerCase().includes(q) ||
-      r.plan.toLowerCase().includes(q) ||
-      r.step.toLowerCase().includes(q) ||
-      r.owner.toLowerCase().includes(q)
-    ) : tableData;
-    renderTable(filtered);
+    return tableData.filter(r => {
+      const matchSearch = !q || (
+        r.item.toLowerCase().includes(q) ||
+        r.plan.toLowerCase().includes(q) ||
+        r.step.toLowerCase().includes(q) ||
+        r.owner.toLowerCase().includes(q)
+      );
+      const matchStatus = !currentStatusFilter || (r.status || 'ongoing') === currentStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }
+
+  function filterTable() {
+    renderTable(getFiltered());
+  }
+
+  function setStatusFilter(status) {
+    currentStatusFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const map = { '': 'fbAll', 'ongoing': 'fbOngoing', 'done': 'fbDone', 'cancelled': 'fbCancelled' };
+    document.getElementById(map[status]).classList.add('active');
+    filterTable();
   }
 
   /* ---------- Modal ---------- */
+  function selectStatus(s) {
+    currentEditStatus = s;
+    ['ongoing','done','cancelled'].forEach(v => {
+      const btn = document.getElementById('seg' + v.charAt(0).toUpperCase() + v.slice(1));
+      btn.className = 'seg-btn' + (v === s ? ' active-' + v : '');
+    });
+  }
+
   function openModal(idx) {
     editingRow = idx;
     const r = tableData[idx];
     document.getElementById('modalItemName').textContent = `${r.no}. ${r.item}`;
     document.getElementById('inputPlan').value = r.plan;
     document.getElementById('inputStep').value = r.step;
+    selectStatus(r.status || 'ongoing');
     document.getElementById('overlay').classList.add('active');
   }
 
@@ -590,13 +743,15 @@
     const now = new Date();
     const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()+543}`;
 
-    const newPlan = document.getElementById('inputPlan').value;
-    const newStep = document.getElementById('inputStep').value;
-    const sheetRow = tableData[editingRow]._row;
+    const newPlan   = document.getElementById('inputPlan').value;
+    const newStep   = document.getElementById('inputStep').value;
+    const newStatus = currentEditStatus;
+    const sheetRow  = tableData[editingRow]._row;
 
-    tableData[editingRow].plan = newPlan;
-    tableData[editingRow].step = newStep;
-    tableData[editingRow].date = dateStr;
+    tableData[editingRow].plan   = newPlan;
+    tableData[editingRow].step   = newStep;
+    tableData[editingRow].date   = dateStr;
+    tableData[editingRow].status = newStatus;
 
     filterTable();
     closeModal();
@@ -607,7 +762,8 @@
       const url = `${INDEX_SCRIPT_URL}?action=update&row=${sheetRow}`
         + `&plan=${encodeURIComponent(newPlan)}`
         + `&step=${encodeURIComponent(newStep)}`
-        + `&date=${encodeURIComponent(dateStr)}`;
+        + `&date=${encodeURIComponent(dateStr)}`
+        + `&status=${encodeURIComponent(newStatus)}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.status !== 'ok') showToast('⚠️ บันทึกใน Sheets ไม่สำเร็จ: ' + (json.msg || ''));
@@ -623,11 +779,6 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
-
-  /* close modal on overlay click */
-  document.getElementById('overlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeModal();
-  });
 
   loadData();
 </script>

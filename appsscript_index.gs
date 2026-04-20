@@ -4,7 +4,7 @@
 // ============================================================
 //
 //  คอลัมน์ใน Sheet:
-//    A=ลำดับ  B=รายการ  C=แผน  D=ความคืบหน้า  E=วันที่อัปเดต  F=ผู้รับผิดชอบ
+//    A=ลำดับ  B=รายการ  C=แผน  D=ความคืบหน้า  E=วันที่อัปเดต  F=ผู้รับผิดชอบ  G=สถานะ
 //
 // ============================================================
 
@@ -27,7 +27,8 @@ function handleRead() {
   const rows  = data.slice(1).map((r, i) => ({
     _row:  i + 2,
     no:    r[0], item: r[1], plan: r[2],
-    step:  r[3], date: r[4], owner: r[5]
+    step:  r[3], date: r[4], owner: r[5],
+    status: r[6] || 'ongoing'
   }));
   return jsonResponse({ status: 'ok', rows });
 }
@@ -43,9 +44,10 @@ function handleUpdate(p) {
     const ss    = SpreadsheetApp.openById('12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk');
     const sheet = ss.getSheets()[0];
 
-    if (p.plan !== undefined) sheet.getRange(row, 3).setValue(p.plan);
-    if (p.step !== undefined) sheet.getRange(row, 4).setValue(p.step);
-    if (p.date !== undefined) sheet.getRange(row, 5).setValue(p.date);
+    if (p.plan   !== undefined) sheet.getRange(row, 3).setValue(p.plan);
+    if (p.step   !== undefined) sheet.getRange(row, 4).setValue(p.step);
+    if (p.date   !== undefined) sheet.getRange(row, 5).setValue(p.date);
+    if (p.status !== undefined) sheet.getRange(row, 7).setValue(p.status);
 
     return jsonResponse({ status: 'ok', row });
   } catch (err) {
@@ -63,7 +65,7 @@ function jsonResponse(obj) {
 
 // ---------- ทดสอบ ----------
 function testUpdate() {
-  const mock = { parameter: { action: 'update', row: '2', plan: 'ทดสอบแผน', step: 'ทดสอบความคืบหน้า', date: '18/04/2569' } };
+  const mock = { parameter: { action: 'update', row: '2', plan: 'ทดสอบแผน', step: 'ทดสอบความคืบหน้า', date: '18/04/2569', status: 'ongoing' } };
   Logger.log(doGet(mock).getContent());
 }
 
