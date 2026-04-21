@@ -8,9 +8,16 @@
 //
 // ============================================================
 
+const SECRET_TOKEN = "mea2569";
+
 function doGet(e) {
   const params = (e && e.parameter) ? e.parameter : {};
   const action = params.action || 'read';
+  const token  = params.token || '';
+
+  if (token !== SECRET_TOKEN) {
+    return jsonResponse({ status: 'error', msg: 'รหัสผ่านไม่ถูกต้อง (Unauthorized)' });
+  }
 
   if (action === 'update') {
     return handleUpdate(params);
