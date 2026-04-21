@@ -1,13 +1,3 @@
-// ============================================================
-//  Apps Script สำหรับ index.html — อัปเดตข้อมูลแผนติดตามงาน
-//  Sheet ID: 12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk
-// ============================================================
-//
-//  คอลัมน์ใน Sheet:
-//    A=ลำดับ  B=รายการ  C=แผน  D=ความคืบหน้า  E=วันที่อัปเดต  F=ผู้รับผิดชอบ  G=สถานะ
-//
-// ============================================================
-
 const SECRET_TOKEN = "mea2569";
 
 function doGet(e) {
@@ -26,7 +16,6 @@ function doGet(e) {
   return handleRead();
 }
 
-// ---------- อ่านข้อมูลทั้งหมด ----------
 function handleRead() {
   const ss    = SpreadsheetApp.openById('12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk');
   const sheet = ss.getSheets()[0];
@@ -40,7 +29,6 @@ function handleRead() {
   return jsonResponse({ status: 'ok', rows });
 }
 
-// ---------- อัปเดตแถวที่ระบุ ----------
 function handleUpdate(p) {
   const row = parseInt(p.row);
   if (!row || row < 2) return jsonResponse({ status: 'error', msg: 'invalid row' });
@@ -70,34 +58,7 @@ function jsonResponse(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ---------- ทดสอบ ----------
 function testUpdate() {
   const mock = { parameter: { action: 'update', row: '2', plan: 'ทดสอบแผน', step: 'ทดสอบความคืบหน้า', date: '18/04/2569', status: 'ongoing' } };
   Logger.log(doGet(mock).getContent());
 }
-
-// ============================================================
-//  ขั้นตอนติดตั้ง
-// ============================================================
-//
-//  1. เปิด Google Sheet ของ index (ID: 12phzuN2fWAbTPJ5zRAM2YFPt6SwkMTdify6b2qSVwyk)
-//
-//  2. เมนู Extensions > Apps Script
-//
-//  3. ลบ code เดิมออก แล้ววาง code นี้ (เฉพาะส่วนบน ไม่ต้องรวม comment ขั้นตอน)
-//
-//  4. กด Save (Ctrl+S)
-//
-//  5. รัน testUpdate() 1 ครั้งเพื่อ authorize
-//
-//  6. Deploy > New deployment
-//     - Type: Web app
-//     - Execute as: Me
-//     - Who has access: Anyone
-//     - กด Deploy > Copy the Web App URL
-//
-//  7. เปิด index.html หาบรรทัด:
-//       const INDEX_SCRIPT_URL = '';
-//     เปลี่ยนเป็น URL ที่ได้จากข้อ 6
-//
-// ============================================================
