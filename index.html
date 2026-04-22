@@ -306,10 +306,110 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---- Card list (mobile) ---- */
+    /* ---- Card list (hidden by default, shown on tablet/mobile) ---- */
     .card-list { display: none; }
 
-    /* ---- Mobile ---- */
+    /* ---- Card styles (shared: tablet + mobile) ---- */
+    .card {
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      border-left: 4px solid #f97316;
+    }
+    .card.status-ongoing   { border-left-color: #eab308; }
+    .card.status-done      { border-left-color: #22c55e; }
+    .card.status-cancelled { border-left-color: #ef4444; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .card-num {
+      background: #374151;
+      color: white;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+      line-height: 1.6;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a202c;
+      line-height: 1.4;
+      flex: 1;
+    }
+    .card-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      font-size: 12px;
+      padding-left: 2px;
+      align-items: center;
+    }
+    .card-owner { color: #4b5563; font-weight: 500; }
+    .card-date  { color: #94a3b8; }
+    .card-section { margin-bottom: 8px; }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .card-text {
+      font-size: 13px;
+      color: #374151;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+    .card-empty { font-size: 12px; color: #cbd5e0; font-style: italic; }
+    .card-footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-update-card {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .btn-update-card:hover { background: #ea580c; }
+
+    /* ---- Tablet (768px – 1199px) ---- */
+    @media (min-width: 768px) and (max-width: 1199px) {
+      header .contact { display: none; }
+
+      .toolbar { padding: 10px 20px; }
+      .toolbar input { width: 220px; }
+
+      .table-wrap { padding: 16px 20px; }
+      #mainTable { display: none !important; }
+
+      .card-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .card { margin-bottom: 0; }
+    }
+
+    /* ---- Mobile (≤767px) ---- */
     @media (max-width: 767px) {
       header {
         padding: 12px 16px;
@@ -340,90 +440,9 @@
         overflow-x: visible;
       }
       #mainTable { display: none !important; }
-
-      /* Cards */
       .card-list { display: block; }
 
-      .card {
-        background: white;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        padding: 14px 14px;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-        border-left: 4px solid #f97316;
-      }
-      .card.status-ongoing   { border-left-color: #eab308; }
-      .card.status-done      { border-left-color: #22c55e; }
-      .card.status-cancelled { border-left-color: #ef4444; }
-
-      .card-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 8px;
-      }
-      .card-num {
-        background: #374151;
-        color: white;
-        border-radius: 6px;
-        padding: 2px 8px;
-        font-size: 12px;
-        font-weight: 700;
-        flex-shrink: 0;
-        margin-top: 2px;
-        line-height: 1.6;
-      }
-      .card-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1a202c;
-        line-height: 1.4;
-        flex: 1;
-      }
-      .card-meta {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-        font-size: 12px;
-        padding-left: 2px;
-        align-items: center;
-      }
-      .card-owner { color: #4b5563; font-weight: 500; }
-      .card-date  { color: #94a3b8; }
-      .card-section { margin-bottom: 8px; }
-      .card-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: #94a3b8;
-        letter-spacing: 0.5px;
-        margin-bottom: 2px;
-        text-transform: uppercase;
-      }
-      .card-text {
-        font-size: 13px;
-        color: #374151;
-        white-space: pre-line;
-        line-height: 1.5;
-      }
-      .card-empty { font-size: 12px; color: #cbd5e0; font-style: italic; }
-      .card-footer {
-        margin-top: 12px;
-        display: flex;
-        justify-content: flex-end;
-      }
-      .btn-update-card {
-        background: #f97316;
-        color: white;
-        border: none;
-        padding: 9px 22px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-family: inherit;
-        font-weight: 600;
-        min-height: 44px;
-      }
+      .btn-update-card { font-size: 14px; padding: 9px 22px; min-height: 44px; }
       .btn-update-card:active { background: #ea580c; }
 
       /* Modal → bottom sheet */
@@ -440,7 +459,6 @@
       .btn-cancel, .btn-save { min-height: 44px; font-size: 15px; }
       .btn-save { flex: 1; }
       .modal .modal-footer { flex-wrap: wrap; gap: 8px; }
-      .status-select { font-size: 13px; padding: 8px 10px; }
 
       .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; }
     }
