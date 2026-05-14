@@ -544,6 +544,18 @@
 
   const STATUS_LABEL = { ongoing: 'กำลังดำเนินการ', done: 'สำเร็จ', cancelled: 'ยกเลิก' };
 
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(dateStr))) return dateStr;
+    const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+      let year = parseInt(m[1]);
+      if (year < 2500) year += 543;
+      return `${m[3]}/${m[2]}/${year}`;
+    }
+    return dateStr;
+  }
+
   let tableData = [];
   let editingRow = null;
   let currentStatusFilter = '';
@@ -557,7 +569,7 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       if (json.status !== 'ok') throw new Error(json.msg || 'ไม่สามารถโหลดข้อมูลได้');
-      tableData = json.rows.map((r, i) => ({ ...r, _idx: i }));
+      tableData = json.rows.map((r, i) => ({ ...r, _idx: i, date: formatDate(r.date) }));
     } catch (err) {
       console.error(err);
       document.getElementById('loadingDiv').innerHTML =
