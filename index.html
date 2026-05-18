@@ -450,13 +450,19 @@
       header h1 { font-size: 16px; }
       header p  { font-size: 12px; }
       header .contact { display: none; }
-      header > div:not(.contact) { flex: 1; min-width: 0; }
       .btn-add-mobile {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         margin-left: auto;
-        font-size: 12px;
-        padding: 7px 12px;
-        white-space: nowrap;
+        font-size: 20px;
+        font-weight: 700;
+        padding: 0;
+        width: 34px;
+        height: 34px;
+        min-height: 0;
+        line-height: 1;
+        border-radius: 8px;
         flex-shrink: 0;
       }
 
@@ -513,7 +519,7 @@
     <p>กองสถานีไฟฟ้า — ระบบติดตามสถานะงาน</p>
   </div>
   <div class="contact">ติดต่อสอบถามข้อมูลเพิ่มเติม<br>คุณอรรถพล Tel.702-4886</div>
-  <button class="btn-add btn-add-mobile" onclick="openAddModal()">+ เพิ่มรายการ</button>
+  <button class="btn-add btn-add-mobile" onclick="openAddModal()" aria-label="เพิ่มรายการ" title="เพิ่มรายการ">+</button>
 </header>
 
 <div class="toolbar">
