@@ -630,7 +630,7 @@
     } catch (err) {
       console.error(err);
       document.getElementById('loadingDiv').innerHTML =
-        `<div style="color:#ef4444; font-weight:bold;">⚠️ ข้อผิดพลาด: ${err.message}<br>โปรดตรวจสอบการเชื่อมต่อ หรือ Token</div>`;
+        `<div style="color:#ef4444; font-weight:bold;">⚠️ ข้อผิดพลาด: ${err.message}<br>โปรดเชื่อมต่อใหม่(Refresh)อีกครั้ง</div>`;
       return;
     }
     renderTable(getFiltered());
