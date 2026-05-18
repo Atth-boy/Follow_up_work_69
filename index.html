@@ -47,10 +47,10 @@
     }
     .toolbar input:focus { border-color: #f97316; }
     .toolbar .status-badge {
-      margin-left: auto;
       font-size: 12px;
       color: #64748b;
     }
+    .toolbar .btn-add { margin-left: auto; }
     .status-badge span {
       display: inline-block;
       width: 8px; height: 8px;
@@ -274,6 +274,36 @@
     }
     .btn-save:hover { background: #ea580c; }
 
+    .btn-add {
+      padding: 6px 14px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-add:hover { background: #15803d; }
+
+    .modal input[type="text"] {
+      width: 100%;
+      border: 1px solid #cbd5e0;
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal input[type="text"]:focus { border-color: #f97316; }
+    .modal label .req { color: #ef4444; margin-left: 2px; }
+    .modal .field-group.invalid input,
+    .modal .field-group.invalid textarea { border-color: #ef4444; }
+
     .toast {
       position: fixed;
       bottom: 28px; right: 28px;
@@ -411,6 +441,8 @@
 
     /* ---- Mobile (≤767px) ---- */
     @media (max-width: 767px) {
+      .btn-add { font-size: 14px; padding: 9px 16px; min-height: 40px; }
+
       header {
         padding: 12px 16px;
         flex-wrap: wrap;
@@ -483,6 +515,7 @@
     <button class="filter-btn f-done"    id="fbDone"    onclick="setStatusFilter('done')">● สำเร็จ</button>
     <button class="filter-btn f-cancelled" id="fbCancelled" onclick="setStatusFilter('cancelled')">● ยกเลิก</button>
   </div>
+  <button class="btn-add" onclick="openAddModal()">+ เพิ่มรายการ</button>
   <div class="status-badge"><span></span>เชื่อมต่อ database</div>
 </div>
 
@@ -511,8 +544,12 @@
 <!-- Modal -->
 <div class="overlay" id="overlay">
   <div class="modal" id="modalBox">
-    <h2>แก้ไขรายการงาน</h2>
+    <h2 id="modalTitle">แก้ไขรายการงาน</h2>
     <div class="modal-item" id="modalItemName"></div>
+    <div class="field-group" id="fieldItem" style="display:none">
+      <label>รายการ<span class="req">*</span></label>
+      <input type="text" id="inputItem" placeholder="ชื่อรายการงาน" />
+    </div>
     <div class="field-group">
       <label>แผนการดำเนินงาน</label>
       <textarea id="inputPlan" rows="4"></textarea>
@@ -521,15 +558,19 @@
       <label>ขั้นตอนปัจจุบัน</label>
       <textarea id="inputStep" rows="4"></textarea>
     </div>
+    <div class="field-group" id="fieldOwner" style="display:none">
+      <label>ผู้รับผิดชอบ<span class="req">*</span></label>
+      <input type="text" id="inputOwner" placeholder="ชื่อผู้รับผิดชอบ" />
+    </div>
     <div class="modal-footer">
-      <div class="seg-group">
+      <div class="seg-group" id="segGroup">
         <button class="seg-btn" id="segOngoing"   onclick="selectStatus('ongoing')">กำลังดำเนินการ</button>
         <button class="seg-btn" id="segDone"      onclick="selectStatus('done')">สำเร็จ</button>
         <button class="seg-btn" id="segCancelled" onclick="selectStatus('cancelled')">ยกเลิก</button>
       </div>
       <div class="modal-footer-right">
         <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-        <button class="btn-save" onclick="saveRow()">บันทึก</button>
+        <button class="btn-save" id="btnSave" onclick="saveRow()">บันทึก</button>
       </div>
     </div>
   </div>
@@ -558,6 +599,7 @@
 
   let tableData = [];
   let editingRow = null;
+  let modalMode = 'edit';
   let currentStatusFilter = '';
   let currentEditStatus = 'ongoing';
 
@@ -691,13 +733,42 @@
   }
 
   function openModal(idx) {
+    modalMode = 'edit';
     editingRow = idx;
     const r = tableData[idx];
+    document.getElementById('modalTitle').textContent = 'แก้ไขรายการงาน';
     document.getElementById('modalItemName').textContent = `${r.no}. ${r.item}`;
+    document.getElementById('modalItemName').style.display = '';
+    document.getElementById('fieldItem').style.display = 'none';
+    document.getElementById('fieldOwner').style.display = 'none';
+    document.getElementById('segGroup').style.display = '';
     document.getElementById('inputPlan').value = r.plan;
     document.getElementById('inputStep').value = r.step;
     selectStatus(r.status || 'ongoing');
+    clearInvalid();
     document.getElementById('overlay').classList.add('active');
+  }
+
+  function openAddModal() {
+    modalMode = 'add';
+    editingRow = null;
+    document.getElementById('modalTitle').textContent = 'เพิ่มรายการใหม่';
+    document.getElementById('modalItemName').style.display = 'none';
+    document.getElementById('fieldItem').style.display = '';
+    document.getElementById('fieldOwner').style.display = '';
+    document.getElementById('segGroup').style.display = 'none';
+    document.getElementById('inputItem').value = '';
+    document.getElementById('inputOwner').value = '';
+    document.getElementById('inputPlan').value = '';
+    document.getElementById('inputStep').value = '';
+    currentEditStatus = 'ongoing';
+    clearInvalid();
+    document.getElementById('overlay').classList.add('active');
+    setTimeout(() => document.getElementById('inputItem').focus(), 50);
+  }
+
+  function clearInvalid() {
+    document.querySelectorAll('.modal .field-group.invalid').forEach(el => el.classList.remove('invalid'));
   }
 
   function closeModal() {
@@ -705,7 +776,12 @@
     editingRow = null;
   }
 
-  async function saveRow() {
+  function saveRow() {
+    if (modalMode === 'add') return saveNewRow();
+    return saveEditRow();
+  }
+
+  async function saveEditRow() {
     if (editingRow === null) return;
     const now = new Date();
     const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()+543}`;
@@ -737,6 +813,63 @@
       if (json.status !== 'ok') showToast('⚠️ บันทึกใน Sheets ไม่สำเร็จ: ' + (json.msg || ''));
     } catch (err) {
       showToast('⚠️ เชื่อมต่อ Apps Script ไม่ได้');
+    }
+  }
+
+  async function saveNewRow() {
+    const item  = document.getElementById('inputItem').value.trim();
+    const owner = document.getElementById('inputOwner').value.trim();
+    const plan  = document.getElementById('inputPlan').value;
+    const step  = document.getElementById('inputStep').value;
+
+    clearInvalid();
+    let invalid = false;
+    if (!item)  { document.getElementById('fieldItem').classList.add('invalid');  invalid = true; }
+    if (!owner) { document.getElementById('fieldOwner').classList.add('invalid'); invalid = true; }
+    if (invalid) {
+      showToast('⚠️ กรุณากรอกข้อมูลที่จำเป็น (รายการ, ผู้รับผิดชอบ)');
+      return;
+    }
+
+    const btn = document.getElementById('btnSave');
+    const prevText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'กำลังบันทึก...';
+
+    const now = new Date();
+    const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()+543}`;
+
+    try {
+      const url = `${INDEX_SCRIPT_URL}?action=add`
+        + `&item=${encodeURIComponent(item)}`
+        + `&plan=${encodeURIComponent(plan)}`
+        + `&step=${encodeURIComponent(step)}`
+        + `&date=${encodeURIComponent(dateStr)}`
+        + `&owner=${encodeURIComponent(owner)}`
+        + `&token=${API_TOKEN}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status !== 'ok') throw new Error(json.msg || 'unknown error');
+
+      const newRow = {
+        _row: json.row,
+        _idx: tableData.length,
+        no:   json.no,
+        item, plan, step,
+        date: dateStr,
+        owner,
+        status: 'ongoing'
+      };
+      tableData.push(newRow);
+
+      closeModal();
+      filterTable();
+      showToast('เพิ่มรายการเรียบร้อย — ' + item);
+    } catch (err) {
+      showToast('⚠️ เพิ่มรายการไม่สำเร็จ: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = prevText;
     }
   }
 
