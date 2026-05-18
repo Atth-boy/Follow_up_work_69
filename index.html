@@ -288,6 +288,7 @@
       white-space: nowrap;
     }
     .btn-add:hover { background: #15803d; }
+    .btn-add-mobile { display: none; }
 
     .modal input[type="text"] {
       width: 100%;
@@ -441,17 +442,23 @@
 
     /* ---- Mobile (≤767px) ---- */
     @media (max-width: 767px) {
-      .btn-add { font-size: 14px; padding: 9px 16px; min-height: 40px; }
-
       header {
         padding: 12px 16px;
-        flex-wrap: wrap;
         gap: 8px;
       }
       header .logo { font-size: 26px; }
       header h1 { font-size: 16px; }
       header p  { font-size: 12px; }
       header .contact { display: none; }
+      header > div:not(.contact) { flex: 1; min-width: 0; }
+      .btn-add-mobile {
+        display: inline-block;
+        margin-left: auto;
+        font-size: 12px;
+        padding: 7px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
 
       .toolbar {
         padding: 10px 16px;
@@ -463,8 +470,9 @@
         font-size: 15px;
         padding: 9px 14px;
       }
-      .toolbar .status-badge { margin-left: 0; }
-      .filter-btns { width: 100%; }
+      .toolbar .btn-add { display: none; }
+      .toolbar .status-badge { margin-left: auto; }
+      .filter-btns { width: auto; flex: 1; }
       .filter-btn { font-size: 11px; padding: 5px 10px; }
 
       .table-wrap {
@@ -505,6 +513,7 @@
     <p>กองสถานีไฟฟ้า — ระบบติดตามสถานะงาน</p>
   </div>
   <div class="contact">ติดต่อสอบถามข้อมูลเพิ่มเติม<br>คุณอรรถพล Tel.702-4886</div>
+  <button class="btn-add btn-add-mobile" onclick="openAddModal()">+ เพิ่มรายการ</button>
 </header>
 
 <div class="toolbar">
