@@ -862,7 +862,8 @@
         + `&date=${encodeURIComponent(dateStr)}`
         + `&owner=${encodeURIComponent(owner)}`
         + `&token=${API_TOKEN}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       if (json.status !== 'ok') throw new Error(json.msg || 'unknown error');
 
@@ -878,7 +879,13 @@
       tableData.push(newRow);
 
       closeModal();
-      filterTable();
+      // รายการใหม่มีสถานะ 'ongoing' เสมอ — เคลียร์คำค้นหาและสลับไปแท็บที่แสดงผลได้ ไม่งั้นรายการจะถูก filter ซ่อนไว้
+      document.getElementById('searchInput').value = '';
+      if (currentStatusFilter && currentStatusFilter !== 'ongoing') {
+        setStatusFilter('ongoing');
+      } else {
+        filterTable();
+      }
       showToast('เพิ่มรายการเรียบร้อย — ' + item);
     } catch (err) {
       showToast('⚠️ เพิ่มรายการไม่สำเร็จ: ' + err.message);
